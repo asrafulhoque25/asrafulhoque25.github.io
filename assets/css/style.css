@@ -8323,10 +8323,15 @@ body.template-color-1 {
         .popup-mobile-menu.menu-open .inner .content .primary-menu {
           margin-top: 20px;
           display: flex;
-          flex-direction: column; }
+          flex-direction: row;
+          column-gap: 50px;
+        }
           .popup-mobile-menu.menu-open .inner .content .primary-menu .nav-item {
             display: block;
-            margin: 8px 0; }
+            margin: 8px 0;
+            max-width: 121px;
+            min-width: 108px;
+          }
             .popup-mobile-menu.menu-open .inner .content .primary-menu .nav-item a {
               color: var(--color-lightn);
               position: relative;
