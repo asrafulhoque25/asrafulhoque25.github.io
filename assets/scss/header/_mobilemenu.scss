@@ -105,11 +105,14 @@
                 .primary-menu {
                     margin-top: 20px;
                     display: flex;
-                    flex-direction: column;
+                    flex-direction: row;
+                    column-gap: 50px;
 
                     .nav-item {
                         display: block;
                         margin: 8px 0;
+                        max-width: 121px;
+                        min-width: 108px;
                         a {
                             color: var(--color-lightn);
                             position: relative;
