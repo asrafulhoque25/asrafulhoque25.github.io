@@ -56,6 +56,17 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 ul, ol { list-style: none; }
 ::selection { background: var(--accent); color: var(--ink); }
 
+/* Slim custom scrollbar (Chrome, Edge, Safari) */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--ink); }
+::-webkit-scrollbar-thumb { background: rgba(241, 238, 230, .28); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+::-webkit-scrollbar-corner { background: var(--ink); }
+/* Firefox only: Chrome 121+ ignores the webkit rules above if these are set globally */
+@supports (-moz-appearance: none) {
+  html { scrollbar-width: thin; scrollbar-color: rgba(241, 238, 230, .28) var(--ink); }
+}
+
 .visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .skip-link { position: fixed; top: 10px; left: 10px; z-index: 999; padding: 10px 16px; background: var(--accent); color: var(--ink); border-radius: 8px; transform: translateY(-200%); }
 .skip-link:focus { transform: none; }
