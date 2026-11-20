@@ -1,10 +1,11 @@
 # Md Asraful Hoque
 
-> Md Asraful Hoque (also known as Asraful Hoque Emon) is a full-stack web developer from Dhaka, Bangladesh. He has built websites and web apps since 2018 with React, Next.js, WordPress and Webflow, from Figma design to launch.
+> Md Asraful Hoque (also known as Asraful Hoque Emon) is a full-stack web developer from Dhaka, Bangladesh. He has built websites and web apps since 2018 with React, Next.js, WordPress and Webflow. He also builds Shopify stores and adds AI features (chatbots, AI search, automation) to websites.
 
 - Full name: Md Asraful Hoque
 - Also known as: Asraful Hoque, Asraful Hoque Emon, Emon
-- Role: Full-Stack Web Developer
+- Role: Full-Stack Web Developer, Shopify & AI Integrations
+- Services: Shopify store development, React & Next.js, WordPress, Webflow, AI integration, backend & APIs
 - Location: Dhaka, Bangladesh (GMT+6)
 - Education: M.Sc. in CSE, Jahangirnagar University; B.Sc. in CSE, Daffodil International University
 - Contact: asrafulhoqueemon25@gmail.com
