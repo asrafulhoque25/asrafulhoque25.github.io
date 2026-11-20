@@ -1,9 +1,16 @@
 {
-  "name": "Asraful Hoque | Frontend Developer & UI/UX Designer",
+  "name": "Md Asraful Hoque | Full-Stack Web Developer",
   "short_name": "Asraful Hoque",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0d0d0c",
   "theme_color": "#0d0d0c",
-  "icons": [{ "src": "assets/images/icon.png", "sizes": "192x192", "type": "image/png" }]
+  "icons": [
+    {
+      "src": "assets/images/icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "description": "Portfolio of Md Asraful Hoque (Emon), full-stack web developer in Dhaka, Bangladesh."
 }

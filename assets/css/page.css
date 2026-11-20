@@ -1,0 +1,94 @@
+/* =========================================================
+   Inner pages (About, Blog, Articles)
+   Loaded after main.css; works without JavaScript.
+   ========================================================= */
+
+.page { padding-top: 120px; }
+.page .nav { background: rgba(13,13,12,.8); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); padding-top: 14px; padding-bottom: 14px; }
+
+/* Keep inner-page nav usable on small screens without the JS menu */
+@media (max-width: 900px) {
+  .page .nav__links { display: flex; overflow-x: auto; max-width: 62vw; scrollbar-width: none; }
+  .page .nav__links::-webkit-scrollbar { display: none; }
+  .page .nav__links a { padding: 7px 12px; font-size: 13px; white-space: nowrap; }
+  .page .nav__status { display: none; }
+}
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 var(--gutter); }
+.wrap--wide { max-width: 1120px; }
+
+/* Breadcrumbs */
+.crumbs { display: flex; flex-wrap: wrap; gap: 8px; font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); margin-bottom: 28px; }
+.crumbs a:hover { color: var(--accent); }
+.crumbs span[aria-hidden] { opacity: .5; }
+
+/* Page header */
+.phead { padding: 24px 0 48px; border-bottom: 1px solid var(--line); margin-bottom: 48px; }
+.phead h1 { font-size: clamp(40px, 7vw, 96px); line-height: .95; letter-spacing: -.045em; font-weight: 700; margin: 14px 0 22px; }
+.phead h1 em { font-family: var(--f-serif); font-style: italic; font-weight: 400; color: var(--accent); letter-spacing: -.02em; }
+.phead p.lead { font-size: clamp(18px, 2vw, 22px); color: var(--bone-2); max-width: 720px; }
+.meta { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-top: 22px; font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+.meta img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+
+/* Profile intro */
+.intro { display: grid; grid-template-columns: 280px 1fr; gap: 48px; align-items: start; margin-bottom: 56px; }
+.intro figure img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius); border: 1px solid var(--line); }
+.intro figcaption { font-family: var(--f-mono); font-size: 12px; color: var(--mute); margin-top: 10px; letter-spacing: .06em; }
+@media (max-width: 760px) { .intro { grid-template-columns: 1fr; } .intro figure { max-width: 260px; } }
+
+/* Fact table */
+.facts { width: 100%; border-collapse: collapse; margin: 8px 0 40px; font-size: 16px; }
+.facts th, .facts td { text-align: left; vertical-align: top; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.facts th { width: 34%; font-family: var(--f-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); font-weight: 400; padding-right: 20px; }
+
+/* Long-form text */
+.prose { font-size: 18px; line-height: 1.75; color: var(--bone-2); }
+.prose > * + * { margin-top: 1.1em; }
+.prose h2 { font-size: clamp(28px, 3.6vw, 42px); line-height: 1.1; letter-spacing: -.03em; color: var(--bone); margin-top: 2em; font-weight: 700; }
+.prose h3 { font-size: 22px; letter-spacing: -.02em; color: var(--bone); margin-top: 1.6em; font-weight: 600; }
+.prose a { color: var(--bone); background: linear-gradient(var(--accent), var(--accent)) 0 100% / 100% 1px no-repeat; }
+.prose a:hover { color: var(--accent); }
+.prose strong { color: var(--bone); font-weight: 600; }
+.prose ul, .prose ol { padding-left: 1.3em; }
+.prose ul { list-style: disc; }
+.prose ol { list-style: decimal; }
+.prose li + li { margin-top: .45em; }
+.prose li::marker { color: var(--accent); }
+.prose blockquote { border-left: 2px solid var(--accent); padding: 4px 0 4px 22px; font-family: var(--f-serif); font-style: italic; font-size: 24px; line-height: 1.4; color: var(--bone); }
+.prose table { width: 100%; border-collapse: collapse; font-size: 16px; }
+.prose th, .prose td { border-bottom: 1px solid var(--line); padding: 12px 10px 12px 0; text-align: left; vertical-align: top; }
+.prose th { color: var(--bone); font-weight: 600; }
+.prose .tablewrap { overflow-x: auto; }
+.prose code { font-family: var(--f-mono); font-size: .88em; background: var(--ink-3); padding: 2px 6px; border-radius: 6px; color: var(--bone); }
+
+/* Profile link grid */
+.profiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin: 20px 0 48px; }
+.profiles a { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--ink-2); transition: border-color .3s, transform .4s var(--ease); }
+.profiles a:hover { border-color: var(--accent); transform: translateY(-2px); }
+.profiles b { font-weight: 600; color: var(--bone); }
+.profiles span { min-width: 0; }
+.profiles small { display: block; overflow-wrap: anywhere; font-family: var(--f-mono); font-size: 11px; color: var(--mute); letter-spacing: .04em; margin-top: 2px; }
+.profiles i { font-style: normal; color: var(--accent); }
+
+/* Blog list */
+.posts { display: grid; gap: 16px; margin-bottom: 64px; }
+.post-card { display: block; padding: 28px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--ink-2); transition: border-color .3s, transform .4s var(--ease); }
+.post-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+.post-card h2 { font-size: clamp(24px, 3vw, 34px); line-height: 1.1; letter-spacing: -.03em; margin: 10px 0 12px; font-weight: 700; }
+.post-card p { color: var(--bone-2); }
+
+/* Author box */
+.author { display: flex; gap: 20px; align-items: center; margin: 64px 0; padding: 24px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--ink-2); }
+.author img { width: 84px; height: 84px; border-radius: 50%; object-fit: cover; flex: none; }
+.author p { color: var(--bone-2); font-size: 16px; }
+.author strong { color: var(--bone); }
+
+/* Call to action band */
+.cta-band { margin: 64px 0 96px; padding: clamp(28px, 4vw, 48px); border-radius: var(--radius); background: var(--accent); color: var(--ink); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px; }
+.cta-band h2 { font-size: clamp(26px, 3.4vw, 40px); letter-spacing: -.03em; line-height: 1.05; font-weight: 700; }
+.cta-band .btn--ink { background: var(--ink); color: var(--bone); }
+.cta-band .btn--ink::before { background: var(--bone); }
+.cta-band .btn--ink:hover { color: var(--ink); }
+
+/* Simple footer for inner pages */
+.page .footer__big { font-size: clamp(36px, 10vw, 180px); }

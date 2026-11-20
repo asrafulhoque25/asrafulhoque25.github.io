@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Md Asraful Hoque, Blog</title>
+    <link>https://asrafulhoque25.github.io/blog/</link>
+    <atom:link href="https://asrafulhoque25.github.io/blog/feed.xml" rel="self" type="application/rss+xml"/>
+    <description>Articles by full-stack web developer Md Asraful Hoque (Emon).</description>
+    <language>en</language>
+    <item>
+      <title>WordPress vs Webflow vs Next.js: How I Choose the Right Stack</title>
+      <link>https://asrafulhoque25.github.io/blog/wordpress-vs-webflow-vs-nextjs/</link>
+      <guid>https://asrafulhoque25.github.io/blog/wordpress-vs-webflow-vs-nextjs/</guid>
+      <pubDate>Fri, 20 Nov 2026 06:00:00 +0000</pubDate>
+      <dc:creator>Md Asraful Hoque</dc:creator>
+      <description>A practical guide from full-stack developer Md Asraful Hoque on when a client website should be built in WordPress, Webflow or Next.js.</description>
+    </item>
+    <item>
+      <title>From Figma to a Live Website: My 4-Step Build Process</title>
+      <link>https://asrafulhoque25.github.io/blog/figma-to-website-process/</link>
+      <guid>https://asrafulhoque25.github.io/blog/figma-to-website-process/</guid>
+      <pubDate>Fri, 20 Nov 2026 06:00:00 +0000</pubDate>
+      <dc:creator>Md Asraful Hoque</dc:creator>
+      <description>How Md Asraful Hoque turns a Figma design into a fast, SEO-ready website in four steps: brief, design, build and launch.</description>
+    </item>
+  </channel>
+</rss>
