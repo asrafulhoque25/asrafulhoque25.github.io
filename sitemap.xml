@@ -2,10 +2,25 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://asrafulhoque25.github.io/</loc>
-    <lastmod>2026-10-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>1.0</priority>
+    <lastmod>2026-11-20</lastmod>
     <image:image><image:loc>https://asrafulhoque25.github.io/assets/images/asrafulprofile.webp</image:loc></image:image>
     <image:image><image:loc>https://asrafulhoque25.github.io/assets/images/og-image.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://asrafulhoque25.github.io/about/</loc>
+    <lastmod>2026-11-20</lastmod>
+    <image:image><image:loc>https://asrafulhoque25.github.io/assets/images/asrafulprofile.webp</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://asrafulhoque25.github.io/blog/</loc>
+    <lastmod>2026-11-20</lastmod>
+  </url>
+  <url>
+    <loc>https://asrafulhoque25.github.io/blog/wordpress-vs-webflow-vs-nextjs/</loc>
+    <lastmod>2026-11-20</lastmod>
+  </url>
+  <url>
+    <loc>https://asrafulhoque25.github.io/blog/figma-to-website-process/</loc>
+    <lastmod>2026-11-20</lastmod>
   </url>
 </urlset>
