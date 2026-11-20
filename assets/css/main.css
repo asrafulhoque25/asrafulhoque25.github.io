@@ -322,6 +322,8 @@ html:not(.anim) .marquee__track { animation: marquee 30s linear infinite; }
 .svc:nth-child(2) { --i: 1; }
 .svc:nth-child(3) { --i: 2; }
 .svc:nth-child(4) { --i: 3; }
+.svc:nth-child(5) { --i: 4; }
+.svc:nth-child(6) { --i: 5; }
 .svc::after { content: ""; position: absolute; inset: 0; background: #000; opacity: var(--dim, 0); pointer-events: none; border-radius: inherit; }
 .svc--bone { background: var(--bone); color: var(--ink); border-color: var(--bone); }
 .svc--accent { background: var(--accent); color: var(--ink); border-color: var(--accent); }
