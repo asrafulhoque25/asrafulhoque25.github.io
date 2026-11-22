@@ -25,7 +25,7 @@
   tickClock(); setInterval(tickClock, 30000);
 
   var hint = $('.featured__hint');
-  if (hint && window.innerWidth <= 900) hint.innerHTML = 'Swipe to explore <span aria-hidden="true">→</span>';
+  if (hint && window.innerWidth <= 900) hint.innerHTML = 'Swipe to explore <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>';
 
   /* ---------- gallery: duplicate sets for a seamless loop ---------- */
   $$('.gallery__row').forEach(function (row) {

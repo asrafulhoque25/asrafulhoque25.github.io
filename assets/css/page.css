@@ -24,8 +24,8 @@
 
 /* Page header */
 .phead { padding: 24px 0 48px; border-bottom: 1px solid var(--line); margin-bottom: 48px; }
-.phead h1 { font-size: clamp(40px, 7vw, 96px); line-height: .95; letter-spacing: -.045em; font-weight: 700; margin: 14px 0 22px; }
-.phead h1 em { font-family: var(--f-serif); font-style: italic; font-weight: 400; color: var(--accent); letter-spacing: -.02em; }
+.phead h1 { font-family: var(--f-head); text-transform: uppercase; font-size: clamp(48px, 8vw, 120px); line-height: .92; letter-spacing: .005em; font-weight: 400; margin: 14px 0 22px; }
+.phead h1 em { font-style: normal; color: var(--accent); }
 .phead p.lead { font-size: clamp(18px, 2vw, 22px); color: var(--bone-2); max-width: 720px; }
 .meta { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-top: 22px; font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
 .meta img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
@@ -54,7 +54,7 @@
 .prose ol { list-style: decimal; }
 .prose li + li { margin-top: .45em; }
 .prose li::marker { color: var(--accent); }
-.prose blockquote { border-left: 2px solid var(--accent); padding: 4px 0 4px 22px; font-family: var(--f-serif); font-style: italic; font-size: 24px; line-height: 1.4; color: var(--bone); }
+.prose blockquote { border-left: 2px solid var(--accent); padding: 4px 0 4px 22px; font-weight: 600; font-size: 22px; line-height: 1.4; color: var(--bone); }
 .prose table { width: 100%; border-collapse: collapse; font-size: 16px; }
 .prose th, .prose td { border-bottom: 1px solid var(--line); padding: 12px 10px 12px 0; text-align: left; vertical-align: top; }
 .prose th { color: var(--bone); font-weight: 600; }
