@@ -225,55 +225,56 @@
   <main id="main">
 
     <!-- HERO -->
-    <section class="hero hero--particles" id="home" aria-labelledby="hero-title">
-      <div class="hero__glow" aria-hidden="true"></div>
+    <section class="hero hero--px" id="home" aria-labelledby="hero-title">
+      <div class="px__stage">
+        <div class="hero__glow" aria-hidden="true"></div>
 
-      <div class="hero__figure" data-particles>
-        <img class="hero__reveal" src="assets/images/asraful-cutout.webp" alt="Md Asraful Hoque, full-stack web developer in Dhaka" width="1000" height="1000" fetchpriority="high">
-      </div>
+        <h1 class="px__title" id="hero-title">
+          <span class="visually-hidden">Md </span>
+          <span class="px__word">Asraful</span> <span class="px__word">Hoque</span>
+          <span class="visually-hidden">, full-stack web developer: Shopify, Next.js, WordPress, Webflow and AI</span>
+        </h1>
+        <div class="px__echoes" aria-hidden="true">
+          <span class="px__echo"><span>Asraful</span> <span>Hoque</span></span>
+          <span class="px__echo"><span>Asraful</span> <span>Hoque</span></span>
+          <span class="px__echo"><span>Asraful</span> <span>Hoque</span></span>
+        </div>
 
-      <aside class="hero__side">
-        <div class="hero__loc">
-          <canvas class="hero__globe" width="240" height="240" aria-hidden="true"></canvas>
-          <div>
-            <p><b>Dhaka</b> <span data-clock>--:--</span></p>
-            <p class="hero__loc-sub">6 hours ahead of London</p>
+        <ul class="px__tiles px__tiles--back" aria-label="Tools I work with">
+          <li class="ptile pt--1" data-depth><span class="ptile__face"><svg viewBox="0 0 24 24" role="img" aria-label="Shopify"><path fill="#7AB55C" d="M15.337 23.979l7.216-1.561s-2.604-17.613-2.625-17.73c-.018-.116-.114-.192-.211-.192s-1.929-.136-1.929-.136-1.275-1.274-1.439-1.411c-.045-.037-.075-.057-.121-.074l-.914 21.104h.023zM11.71 11.305s-.81-.424-1.774-.424c-1.447 0-1.504.906-1.504 1.141 0 1.232 3.24 1.715 3.24 4.629 0 2.295-1.44 3.76-3.406 3.76-2.354 0-3.54-1.465-3.54-1.465l.646-2.086s1.245 1.066 2.28 1.066c.675 0 .975-.545.975-.932 0-1.619-2.654-1.694-2.654-4.359-.034-2.237 1.571-4.416 4.827-4.416 1.257 0 1.875.361 1.875.361l-.945 2.715-.02.01zM11.17.83c.136 0 .271.038.405.135-.984.465-2.064 1.639-2.508 3.992-.656.213-1.293.405-1.889.578C7.697 3.75 8.951.84 11.17.84V.83zm1.235 2.949v.135c-.754.232-1.583.484-2.394.736.466-1.777 1.333-2.645 2.085-2.971.193.501.309 1.176.309 2.1zm.539-2.234c.694.074 1.141.867 1.429 1.755-.349.114-.735.231-1.158.366v-.252c0-.752-.096-1.371-.271-1.871v.002zm2.992 1.289c-.02 0-.06.021-.078.021s-.289.075-.714.21c-.423-1.233-1.176-2.37-2.508-2.37h-.115C12.135.209 11.669 0 11.265 0 8.159 0 6.675 3.877 6.21 5.846c-1.194.365-2.063.636-2.16.674-.675.213-.694.232-.772.87-.075.462-1.83 14.063-1.83 14.063L15.009 24l.927-21.166z"/></svg></span></li>
+          <li class="ptile pt--2" data-depth><span class="ptile__face"><svg viewBox="0 0 24 24" role="img" aria-label="Next.js"><path fill="#0d0d0c" d="M18.665 21.978C16.758 23.255 14.465 24 12 24 5.377 24 0 18.623 0 12S5.377 0 12 0s12 5.377 12 12c0 3.583-1.574 6.801-4.067 9.001L9.219 7.2H7.2v9.596h1.615V9.251l9.85 12.727Zm-3.332-8.533 1.6 2.061V7.2h-1.6v6.245Z"/></svg></span></li>
+          <li class="ptile pt--3" data-depth><span class="ptile__face"><svg viewBox="0 0 24 24" role="img" aria-label="React"><path fill="#61DAFB" d="M14.23 12.004a2.236 2.236 0 0 1-2.235 2.236 2.236 2.236 0 0 1-2.236-2.236 2.236 2.236 0 0 1 2.235-2.236 2.236 2.236 0 0 1 2.236 2.236zm2.648-10.69c-1.346 0-3.107.96-4.888 2.622-1.78-1.653-3.542-2.602-4.887-2.602-.41 0-.783.093-1.106.278-1.375.793-1.683 3.264-.973 6.365C1.98 8.917 0 10.42 0 12.004c0 1.59 1.99 3.097 5.043 4.03-.704 3.113-.39 5.588.988 6.38.32.187.69.275 1.102.275 1.345 0 3.107-.96 4.888-2.624 1.78 1.654 3.542 2.603 4.887 2.603.41 0 .783-.09 1.106-.275 1.374-.792 1.683-3.263.973-6.365C22.02 15.096 24 13.59 24 12.004c0-1.59-1.99-3.097-5.043-4.032.704-3.11.39-5.587-.988-6.38-.318-.184-.688-.277-1.092-.278zm-.005 1.09v.006c.225 0 .406.044.558.127.666.382.955 1.835.73 3.704-.054.46-.142.945-.25 1.44-.96-.236-2.006-.417-3.107-.534-.66-.905-1.345-1.727-2.035-2.447 1.592-1.48 3.087-2.292 4.105-2.295zm-9.77.02c1.012 0 2.514.808 4.11 2.28-.686.72-1.37 1.537-2.02 2.442-1.107.117-2.154.298-3.113.538-.112-.49-.195-.964-.254-1.42-.23-1.868.054-3.32.714-3.707.19-.09.4-.127.563-.132zm4.882 3.05c.455.468.91.992 1.36 1.564-.44-.02-.89-.034-1.345-.034-.46 0-.915.01-1.36.034.44-.572.895-1.096 1.345-1.565zM12 8.1c.74 0 1.477.034 2.202.093.406.582.802 1.203 1.183 1.86.372.64.71 1.29 1.018 1.946-.308.655-.646 1.31-1.013 1.95-.38.66-.773 1.288-1.18 1.87-.728.063-1.466.098-2.21.098-.74 0-1.477-.035-2.202-.093-.406-.582-.802-1.204-1.183-1.86-.372-.64-.71-1.29-1.018-1.946.303-.657.646-1.313 1.013-1.954.38-.66.773-1.286 1.18-1.868.728-.064 1.466-.098 2.21-.098zm-3.635.254c-.24.377-.48.763-.704 1.16-.225.39-.435.782-.635 1.174-.265-.656-.49-1.31-.676-1.947.64-.15 1.315-.283 2.015-.386zm7.26 0c.695.103 1.365.23 2.006.387-.18.632-.405 1.282-.66 1.933-.2-.39-.41-.783-.64-1.174-.225-.392-.465-.774-.705-1.146zm3.063.675c.484.15.944.317 1.375.498 1.732.74 2.852 1.708 2.852 2.476-.005.768-1.125 1.74-2.857 2.475-.42.18-.88.342-1.355.493-.28-.958-.646-1.956-1.1-2.98.45-1.017.81-2.01 1.085-2.964zm-13.395.004c.278.96.645 1.957 1.1 2.98-.45 1.017-.812 2.01-1.086 2.964-.484-.15-.944-.318-1.37-.5-1.732-.737-2.852-1.706-2.852-2.474 0-.768 1.12-1.742 2.852-2.476.42-.18.88-.342 1.356-.494zm11.678 4.28c.265.657.49 1.312.676 1.948-.64.157-1.316.29-2.016.39.24-.375.48-.762.705-1.158.225-.39.435-.788.636-1.18zm-9.945.02c.2.392.41.783.64 1.175.23.39.465.772.705 1.143-.695-.102-1.365-.23-2.006-.386.18-.63.406-1.282.66-1.933zM17.92 16.32c.112.493.2.968.254 1.423.23 1.868-.054 3.32-.714 3.708-.147.09-.338.128-.563.128-1.012 0-2.514-.807-4.11-2.28.686-.72 1.37-1.536 2.02-2.44 1.107-.118 2.154-.3 3.113-.54zm-11.83.01c.96.234 2.006.415 3.107.532.66.905 1.345 1.727 2.035 2.446-1.595 1.483-3.092 2.295-4.11 2.295-.22-.005-.406-.05-.553-.132-.666-.38-.955-1.834-.73-3.703.054-.46.142-.944.25-1.438zm4.56.64c.44.02.89.034 1.345.034.46 0 .915-.01 1.36-.034-.44.572-.895 1.095-1.345 1.565-.455-.47-.91-.993-1.36-1.565z"/></svg></span></li>
+          <li class="ptile pt--4" data-depth><span class="ptile__face"><svg viewBox="0 0 24 24" role="img" aria-label="WordPress"><path fill="#21759B" d="M21.469 6.825c.84 1.537 1.318 3.3 1.318 5.175 0 3.979-2.156 7.456-5.363 9.325l3.295-9.527c.615-1.54.82-2.771.82-3.864 0-.405-.026-.78-.07-1.11m-7.981.105c.647-.03 1.232-.105 1.232-.105.582-.075.514-.93-.067-.899 0 0-1.755.135-2.88.135-1.064 0-2.85-.15-2.85-.15-.585-.03-.661.855-.075.885 0 0 .54.061 1.125.09l1.68 4.605-2.37 7.08L5.354 6.9c.649-.03 1.234-.1 1.234-.1.585-.075.516-.93-.065-.896 0 0-1.746.138-2.874.138-.2 0-.438-.008-.69-.015C4.911 3.15 8.235 1.215 12 1.215c2.809 0 5.365 1.072 7.286 2.833-.046-.003-.091-.009-.141-.009-1.06 0-1.812.923-1.812 1.914 0 .89.513 1.643 1.06 2.531.411.72.89 1.643.89 2.977 0 .915-.354 1.994-.821 3.479l-1.075 3.585-3.9-11.61.001.014zM12 22.784c-1.059 0-2.081-.153-3.048-.437l3.237-9.406 3.315 9.087c.024.053.05.101.078.149-1.12.393-2.325.609-3.582.609M1.211 12c0-1.564.336-3.05.935-4.39L7.29 21.709C3.694 19.96 1.212 16.271 1.211 12M12 0C5.385 0 0 5.385 0 12s5.385 12 12 12 12-5.385 12-12S18.615 0 12 0"/></svg></span></li>
+          <li class="ptile pt--5" data-depth><span class="ptile__face"><svg viewBox="0 0 24 24" role="img" aria-label="Webflow"><path fill="#146EF5" d="m24 4.515-7.658 14.97H9.149l3.205-6.204h-.144C9.566 16.713 5.621 18.973 0 19.485v-6.118s3.596-.213 5.71-2.435H0V4.515h6.417v5.278l.144-.001 2.622-5.277h4.854v5.244h.144l2.72-5.244H24Z"/></svg></span></li>
+          <li class="ptile pt--6" data-depth><span class="ptile__face"><svg viewBox="0 0 24 24" role="img" aria-label="Figma"><path fill="#F24E1E" d="M15.852 8.981h-4.588V0h4.588c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.491-4.49 4.491zM12.735 7.51h3.117c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-3.117V7.51zm0 1.471H8.148c-2.476 0-4.49-2.014-4.49-4.49S5.672 0 8.148 0h4.588v8.981zm-4.587-7.51c-1.665 0-3.019 1.355-3.019 3.019s1.354 3.02 3.019 3.02h3.117V1.471H8.148zm4.587 15.019H8.148c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h4.588v8.98zM8.148 8.981c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h3.117V8.981H8.148zM8.172 24c-2.489 0-4.515-2.014-4.515-4.49s2.014-4.49 4.49-4.49h4.588v4.441c0 2.503-2.047 4.539-4.563 4.539zm-.024-7.51a3.023 3.023 0 0 0-3.019 3.019c0 1.665 1.365 3.019 3.044 3.019 1.705 0 3.093-1.376 3.093-3.068v-2.97H8.148zm7.704 0h-.098c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h.098c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.49-4.49 4.49zm-.097-7.509c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h.098c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-.098z"/></svg></span></li>
+          <li class="ptile pt--7" data-depth><span class="ptile__face"><svg viewBox="0 0 24 24" role="img" aria-label="Tailwind CSS"><path fill="#06B6D4" d="M12.001,4.8c-3.2,0-5.2,1.6-6,4.8c1.2-1.6,2.6-2.2,4.2-1.8c0.913,0.228,1.565,0.89,2.288,1.624 C13.666,10.618,15.027,12,18.001,12c3.2,0,5.2-1.6,6-4.8c-1.2,1.6-2.6,2.2-4.2,1.8c-0.913-0.228-1.565-0.89-2.288-1.624 C16.337,6.182,14.976,4.8,12.001,4.8z M6.001,12c-3.2,0-5.2,1.6-6,4.8c1.2-1.6,2.6-2.2,4.2-1.8c0.913,0.228,1.565,0.89,2.288,1.624 c1.177,1.194,2.538,2.576,5.512,2.576c3.2,0,5.2-1.6,6-4.8c-1.2,1.6-2.6,2.2-4.2,1.8c-0.913-0.228-1.565-0.89-2.288-1.624 C10.337,13.382,8.976,12,6.001,12z"/></svg></span></li>
+          <li class="ptile pt--8" data-depth><span class="ptile__face"><svg viewBox="0 0 24 24" role="img" aria-label="JavaScript"><path fill="#F7DF1E" d="M0 0h24v24H0V0zm22.034 18.276c-.175-1.095-.888-2.015-3.003-2.873-.736-.345-1.554-.585-1.797-1.14-.091-.33-.105-.51-.046-.705.15-.646.915-.84 1.515-.66.39.12.75.42.976.9 1.034-.676 1.034-.676 1.755-1.125-.27-.42-.404-.601-.586-.78-.63-.705-1.469-1.065-2.834-1.034l-.705.089c-.676.165-1.32.525-1.71 1.005-1.14 1.291-.811 3.541.569 4.471 1.365 1.02 3.361 1.244 3.616 2.205.24 1.17-.87 1.545-1.966 1.41-.811-.18-1.26-.586-1.755-1.336l-1.83 1.051c.21.48.45.689.81 1.109 1.74 1.756 6.09 1.666 6.871-1.004.029-.09.24-.705.074-1.65l.046.067zm-8.983-7.245h-2.248c0 1.938-.009 3.864-.009 5.805 0 1.232.063 2.363-.138 2.711-.33.689-1.18.601-1.566.48-.396-.196-.597-.466-.83-.855-.063-.105-.11-.196-.127-.196l-1.825 1.125c.305.63.75 1.172 1.324 1.517.855.51 2.004.675 3.207.405.783-.226 1.458-.691 1.811-1.411.51-.93.402-2.07.397-3.346.012-2.054 0-4.109 0-6.179l.004-.056z"/></svg></span></li>
+          <li class="ptile pt--9" data-depth><span class="ptile__face"><svg viewBox="0 0 24 24" role="img" aria-label="GitHub"><path fill="#0d0d0c" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></span></li>
+          <li class="ptile pt--10 ptile--ai" data-depth><span class="ptile__face"><b>✦</b><i>AI</i></span></li>
+        </ul>
+
+        <figure class="px__portrait">
+          <img src="assets/images/asraful-cutout.webp" alt="Md Asraful Hoque, full-stack web developer in Dhaka" width="1000" height="1000" fetchpriority="high">
+        </figure>
+
+        <div class="px__bar">
+          <div class="px__intro">
+            <p class="eyebrow"><span class="dot"></span>Full-Stack Developer · Dhaka, Bangladesh</p>
+            <p class="px__tagline">Websites, web apps &amp; Shopify stores, <em class="serif">from Figma to deploy.</em></p>
+          </div>
+          <div class="px__actions">
+            <div class="hero__cta">
+              <a href="#contact" class="btn btn--accent" data-magnetic><span>Let's talk</span></a>
+              <a href="#work" class="hero__link">See the work <span aria-hidden="true">↘</span></a>
+            </div>
+            <p class="px__trust"><span class="eyebrow">Trusted by</span>
+              <a href="https://pixxen.com/" target="_blank" rel="noopener">Pixxen</a>
+              <a href="https://pexnet.com/" target="_blank" rel="noopener">Pexnet</a>
+              <a href="https://quecut.com/" target="_blank" rel="noopener">Quecut</a>
+              <a href="https://wadialbadaitsolutions.ae/" target="_blank" rel="noopener">Wadi Al Bada IT</a>
+            </p>
           </div>
         </div>
-      </aside>
-
-      <div class="hero__text">
-        <p class="eyebrow hero__eyebrow"><span class="dot"></span>Md Asraful Hoque (Emon)</p>
-        <h1 class="hero__title" id="hero-title">
-          <span class="visually-hidden">Md Asraful Hoque, </span>
-          <span class="line"><span class="split-chars">Full-Stack Developer,</span></span>
-          <span class="line line--sub"><em class="serif split-chars">from Figma to deploy.</em></span>
-        </h1>
-        <p class="hero__lead">I build fast websites, web apps and Shopify stores with Next.js, WordPress and Webflow, plus the AI features and integrations behind them.</p>
-        <div class="hero__cta">
-          <a href="#contact" class="btn btn--accent" data-magnetic><span>Let's talk</span></a>
-          <a href="#work" class="hero__link">See the work <span aria-hidden="true">↘</span></a>
-        </div>
-        <div class="hero__trust">
-          <span class="eyebrow">Trusted by</span>
-          <ul>
-            <li><a href="https://pixxen.com/" target="_blank" rel="noopener">Pixxen</a></li>
-            <li><a href="https://pexnet.com/" target="_blank" rel="noopener">Pexnet</a></li>
-            <li><a href="https://quecut.com/" target="_blank" rel="noopener">Quecut</a></li>
-            <li><a href="https://wadialbadaitsolutions.ae/" target="_blank" rel="noopener">Wadi Al Bada IT</a></li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <!-- Dots from the portrait re-form into the name here on scroll -->
-    <section class="nameband" aria-label="Md Asraful Hoque">
-      <p class="nameband__fallback" aria-hidden="true">Md Asraful Hoque ✦</p>
-      <div class="nameband__dots" data-nameband></div>
-      <div class="nameband__meta">
-        <span>(00)</span>
-        <b>Hi, I'm Asraful</b>
-        <span>Dhaka, working worldwide</span>
       </div>
     </section>
 
@@ -778,6 +779,5 @@
   <script src="assets/js/vendor/ScrollTrigger.min.js" defer></script>
   <script src="assets/js/vendor/lenis.min.js" defer></script>
   <script src="assets/js/main.js" defer></script>
-  <script src="assets/js/hero-particles.js" defer></script>
 </body>
 </html>
