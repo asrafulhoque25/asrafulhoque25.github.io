@@ -4,6 +4,7 @@
    ========================================================= */
 
 @font-face { font-family: "Bricolage Grotesque"; src: url("../fonts/bricolage-grotesque.woff2") format("woff2-variations"), url("../fonts/bricolage-grotesque.woff2") format("woff2"); font-weight: 200 800; font-stretch: 75% 100%; font-style: normal; font-display: swap; }
+@font-face { font-family: "Inter"; src: url("../fonts/inter.woff2") format("woff2-variations"), url("../fonts/inter.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
 @font-face { font-family: "Anton"; src: url("../fonts/anton.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
 @font-face { font-family: "Caveat"; src: url("../fonts/caveat.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
 @font-face { font-family: "Instrument Serif"; src: url("../fonts/instrument-serif-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
@@ -22,9 +23,11 @@
   --accent: #ff5a1f;
   --accent-2: #ff8a5c;
 
-  --f-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
-  --f-serif: "Instrument Serif", ui-serif, Georgia, serif;
-  --f-mono: "JetBrains Mono", ui-monospace, monospace;
+  /* Two families only: Inter for all reading text and UI, Anton for big headlines */
+  --f-display: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-head: "Anton", "Inter", sans-serif;
+  --f-serif: var(--f-display);
+  --f-mono: var(--f-display);
 
   --gutter: clamp(16px, 4vw, 56px);
   --max: 1440px;
@@ -45,8 +48,10 @@ body {
   color: var(--bone);
   font-family: var(--f-display);
   font-size: 17px;
-  line-height: 1.6;
+  line-height: 1.65;
   font-weight: 400;
+  letter-spacing: -.006em;
+  font-feature-settings: 'cv11', 'ss01';
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
 }
@@ -793,3 +798,59 @@ html:not(.anim) .gallery__row[data-dir="-1"] { animation-direction: reverse; }
 /* Before physics starts (or without JS) the pills sit in a neat wrap at the bottom */
 .toss__pills:not(.is-live) { display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-end; gap: 10px; padding: 0 var(--gutter) 28px; position: relative; inset: auto; margin-top: 48px; }
 .toss__pills:not(.is-live) .pill { position: static; }
+
+/* =========================================================
+   Typography system: Inter (text, UI, labels) + Anton (headlines)
+   ========================================================= */
+.serif { font-family: inherit; font-style: normal; font-weight: inherit; letter-spacing: inherit; }
+.eyebrow, .nav__status, .svc__top, .svc__label, .featured__hint, .fcard__new, .fcard__meta, .prow__stack, .exp__label,
+.tl__date, .plan__badge, .plan__time, .crow__k, .crow__a, .step__n, .prow__n, .svc-progress, .svc-nav a span, .menu__links small, .cursor__label {
+  font-weight: 600; letter-spacing: .1em;
+}
+.title, .contact__title, .loader__name, .footer__big, .marquee__item, .isyou__title, .toss__title, .px__title, .px__echo {
+  font-family: var(--f-head); font-weight: 400; text-transform: uppercase; letter-spacing: .005em;
+}
+.title { font-size: clamp(52px, 8.2vw, 140px); line-height: .92; }
+.contact__title { font-size: clamp(56px, 10.5vw, 190px); line-height: .9; }
+.loader__name { line-height: .92; }
+.loader__name span:last-child { font-family: inherit; font-style: normal; color: var(--accent); }
+.marquee__item { font-size: clamp(36px, 5.6vw, 84px); gap: 44px; }
+.marquee__item span:nth-child(4n+3) { font-family: inherit; font-style: normal; font-weight: 400; color: var(--accent); }
+.marquee__item b { display: inline-flex; }
+.footer__big { font-size: clamp(56px, 13.6vw, 300px); letter-spacing: .005em; line-height: .86; justify-content: space-between; overflow: visible; }
+.footer__big span:last-child { font-family: inherit; font-style: normal; color: var(--accent); letter-spacing: inherit; }
+.about__statement { letter-spacing: -.03em; font-weight: 600; }
+.tl__org, .tools__name { font-family: var(--f-display); font-style: normal; font-weight: 600; font-size: 17px; letter-spacing: -.01em; color: var(--bone-2); }
+.tools__name { font-size: 15px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.rotator { font-style: normal; font-weight: 600; letter-spacing: -.02em; }
+.px__tagline .serif, .hero__title .serif { color: var(--accent); font-size: 1em; }
+.svc__title, .tl__role, .plan__name, .fcard__title, .prow__name, .step__title, .qa summary { letter-spacing: -.02em; }
+
+/* =========================================================
+   Icons: Lucide (UI) and Simple Icons (brands)
+   ========================================================= */
+.i { width: 1em; height: 1em; flex: none; display: inline-block; vertical-align: -.14em; }
+.chip .i, .link .i, .hero__link .i, .featured__hint .i { margin-left: .2em; }
+.prow__arrow .i, .crow__a .i { width: 18px; height: 18px; }
+.btn .i { width: 18px; height: 18px; }
+.footer__up .i { width: 20px; height: 20px; }
+.svc__icon .i { width: 100%; height: 100%; stroke-width: 1.5; }
+.note__x .i { width: 100%; height: 100%; stroke-width: 1.8; }
+.star { width: .5em; height: .5em; color: var(--accent); }
+.marquee__item b .star { width: .42em; height: .42em; }
+.ai-i { width: 1.1em; height: 1.1em; stroke-width: 2.2; }
+.bi { width: 18px; height: 18px; }
+.socials a, .footer__social a { color: var(--bone-2); }
+
+/* Footer: every profile as an icon */
+.footer__social { display: flex; flex-wrap: wrap; gap: 8px; }
+.footer__social a { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line-2); display: grid; place-items: center; transition: background .3s var(--ease), color .3s var(--ease), border-color .3s, transform .35s var(--ease); }
+.footer__social a:hover { background: var(--accent); border-color: var(--accent); color: var(--ink); transform: translateY(-3px); }
+.footer__social .bi { width: 16px; height: 16px; }
+.footer__bottom { align-items: center; }
+.socials { max-width: 520px; }
+
+/* Fiverr's mark is the lowercase "fi"; brand wordmarks are too small inside round buttons */
+.bi-fi { font-family: var(--f-display); font-weight: 800; font-size: 17px; letter-spacing: -.04em; line-height: 1; }
+.footer__social .bi-fi { font-size: 15px; }
+.bi--devto { width: 22px; height: 22px; }
