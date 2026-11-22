@@ -244,7 +244,8 @@
   gsap.set('.hero__frame img', { scale: 1.35 });
   gsap.set('.hb', { opacity: 0, scale: .6 });
   gsap.set('.hero__orbit', { opacity: 0, scale: .85 });
-  gsap.set(['.hero__eyebrow', '.hero__lead', '.hero__rotator', '.hero__cta > *', '.hero__stats li', '.hero__card', '.nav'], { opacity: 0, y: 24 });
+  gsap.set(['.hero__eyebrow', '.hero__lead', '.hero__rotator', '.hero__cta > *', '.hero__stats li', '.hero__trust', '.hero__card', '.hero__exp', '.nav'], { opacity: 0, y: 24 });
+  gsap.set('.hero__ambient', { opacity: 0 });
 
   /* ---------- preloader ---------- */
   var loader = $('.loader');
@@ -280,8 +281,9 @@
       .to('.hero__portrait', { clipPath: 'inset(0% 0% 0% 0% round 32px)', duration: 1.4, ease: 'expo.inOut', clearProps: 'clipPath' }, '-=1.1')
       .to('.hero__frame img', { scale: 1.04, duration: 1.8, ease: 'expo.out' }, '<')
       .to('.hero__orbit', { opacity: 1, scale: 1, duration: 1.4, ease: 'expo.out' }, '<.3')
-      .to(['.nav', '.hero__eyebrow', '.hero__lead', '.hero__rotator', '.hero__cta > *', '.hero__stats li'], { opacity: 1, y: 0, stagger: .07, duration: 1, ease: 'expo.out', clearProps: 'transform' }, '-=1.2')
-      .to('.hero__card', { opacity: 1, y: 0, duration: .9, ease: 'expo.out' }, '-=.9')
+      .to('.hero__ambient', { opacity: 1, duration: 2.2, ease: 'power2.out' }, '<')
+      .to(['.nav', '.hero__eyebrow', '.hero__lead', '.hero__rotator', '.hero__cta > *', '.hero__stats li', '.hero__trust'], { opacity: 1, y: 0, stagger: .07, duration: 1.1, ease: 'expo.out', clearProps: 'transform' }, '-=1.2')
+      .to(['.hero__card', '.hero__exp'], { opacity: 1, y: 0, stagger: .12, duration: 1.1, ease: 'expo.out' }, '-=.9')
       .to('.hb', { opacity: 1, scale: 1, stagger: .12, duration: .8, ease: 'back.out(1.8)', clearProps: 'transform' }, '-=.8')
       .add(countUp, '-=1');
   }
@@ -316,13 +318,20 @@
   /* hero portrait 3D tilt follows the mouse */
   var tiltEl = $('[data-tilt]');
   if (tiltEl && finePointer) {
-    var rx = gsap.quickTo(tiltEl, 'rotationX', { duration: .8, ease: 'power3' });
-    var ry = gsap.quickTo(tiltEl, 'rotationY', { duration: .8, ease: 'power3' });
+    var rx = gsap.quickTo(tiltEl, 'rotationX', { duration: 1.4, ease: 'power3.out' });
+    var ry = gsap.quickTo(tiltEl, 'rotationY', { duration: 1.4, ease: 'power3.out' });
+    var amb = $('.hero__ambient');
+    var ax = amb ? gsap.quickTo(amb, 'x', { duration: 2, ease: 'power3.out' }) : null;
+    var ay = amb ? gsap.quickTo(amb, 'y', { duration: 2, ease: 'power3.out' }) : null;
     $('.hero').addEventListener('mousemove', function (e) {
       var r = tiltEl.getBoundingClientRect();
       var px = (e.clientX - (r.left + r.width / 2)) / window.innerWidth;
       var py = (e.clientY - (r.top + r.height / 2)) / window.innerHeight;
-      ry(px * 14); rx(-py * 14);
+      ry(px * 10); rx(-py * 10);
+      if (ax) { ax(-px * 40); ay(-py * 40); }
+      // Spotlight position inside the photo
+      tiltEl.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+      tiltEl.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
     });
     $('.hero').addEventListener('mouseleave', function () { rx(0); ry(0); });
   }
