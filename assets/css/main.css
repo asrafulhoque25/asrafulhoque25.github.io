@@ -684,10 +684,10 @@ html:not(.anim) .gallery__row[data-dir="-1"] { animation-direction: reverse; }
 
 /* Handwritten note beside the portrait */
 .px__note {
-  position: absolute; left: 31%; top: 66%; z-index: 6; transform: translateX(-100%) rotate(-4deg);
+  position: absolute; left: 41.5%; top: 61%; z-index: 6; transform: translateX(-100%) rotate(-4deg);
   font-family: "Caveat", cursive; font-weight: 600; font-size: clamp(20px, 1.7vw, 28px); line-height: 1.15; color: #ffd84d; text-align: right;
 }
-.px__note svg { display: block; width: 96px; margin: 10px 0 0 auto; color: #ffd84d; transform: rotate(4deg); }
+.px__note svg { display: block; width: 84px; margin: 8px -14px 0 auto; color: #ffd84d; transform: rotate(14deg); }
 
 /* Bottom bar: tagline left, actions right */
 .px__bar {
