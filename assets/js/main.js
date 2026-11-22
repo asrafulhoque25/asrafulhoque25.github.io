@@ -240,7 +240,7 @@
   var heroChars = $$('.hero__title .c');
   gsap.set(heroChars, { yPercent: 115 });
   // Particle hero: text and side details fade up; particles assemble on their own
-  gsap.set(['.hero__arrow', '.hero__eyebrow', '.hero__lead', '.hero__cta > *', '.hero__trust', '.hero__side > *', '.hero__dock', '.nav'], { opacity: 0, y: 24 });
+  gsap.set(['.hero__eyebrow', '.hero__lead', '.hero__cta > *', '.hero__trust', '.hero__side > *', '.nav'], { opacity: 0, y: 24 });
 
   /* ---------- preloader ---------- */
   var loader = $('.loader');
@@ -274,7 +274,7 @@
       .to(loader, { clipPath: 'inset(0 0 100% 0)', duration: 1.1, ease: 'expo.inOut' }, '-=.1')
       .to(heroChars, { yPercent: 0, duration: 1.2, stagger: .025, ease: 'expo.out' }, '-=.55')
       .add(function () { window.dispatchEvent(new Event('hero:intro')); }, '-=.9')
-      .to(['.nav', '.hero__arrow', '.hero__eyebrow', '.hero__lead', '.hero__cta > *', '.hero__trust', '.hero__side > *', '.hero__dock'], { opacity: 1, y: 0, stagger: .07, duration: 1.1, ease: 'expo.out', clearProps: 'transform' }, '-=1.1');
+      .to(['.nav', '.hero__eyebrow', '.hero__lead', '.hero__cta > *', '.hero__trust', '.hero__side > *'], { opacity: 1, y: 0, stagger: .07, duration: 1.1, ease: 'expo.out', clearProps: 'transform' }, '-=1.1');
   }
 
   /* ---------- scroll progress ---------- */
@@ -292,9 +292,7 @@
       .to('.bgfx__b--2', { x: '70vw', y: '-60vh', '--c': 'rgba(201,52,24,.18)', duration: 1 }, '<');
 
   /* ---------- hero parallax on scroll ---------- */
-  gsap.to('.hero__title', { yPercent: -8, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
   gsap.to('.hero__glow', { scale: 1.4, opacity: .3, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
-  gsap.to('.hero__figure', { yPercent: -6, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
 
   /* hero glow follows the mouse */
   if (finePointer) {
