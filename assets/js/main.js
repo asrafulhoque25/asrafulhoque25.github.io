@@ -237,17 +237,20 @@
   $$('.split-chars').forEach(splitChars);
   $$('.scrub-words').forEach(splitWords);
 
-  var heroChars = $$('.hero__title .c');
-  gsap.set(heroChars, { yPercent: 115 });
-  // Particle hero: text and side details fade up; particles assemble on their own
-  gsap.set(['.hero__eyebrow', '.hero__lead', '.hero__cta > *', '.hero__trust', '.hero__side > *', '.nav'], { opacity: 0, y: 24 });
+  // Parallax hero: name rises, portrait lifts in, tiles pop out from behind
+  var heroChars = $$('.px__word');
+  gsap.set(heroChars, { yPercent: 60, opacity: 0 });
+  gsap.set('.px__portrait img', { yPercent: 30, opacity: 0 });
+  gsap.set('.ptile', { opacity: 0 });
+  gsap.set(['.px__intro > *', '.px__actions > *', '.nav'], { opacity: 0, y: 24 });
+  heroParallax();
 
   /* ---------- preloader ---------- */
   var loader = $('.loader');
   var num = $('.loader__num');
   var counter = { v: 0 };
   var imgReady = new Promise(function (res) {
-    var im = $('.hero__reveal');
+    var im = $('.px__portrait img');
     if (!im || im.complete) return res();
     im.addEventListener('load', res); im.addEventListener('error', res);
     setTimeout(res, 2500);
@@ -272,9 +275,10 @@
     });
     tl.to('.loader__inner, .loader__bar', { opacity: 0, y: -30, duration: .5, ease: 'power2.in' })
       .to(loader, { clipPath: 'inset(0 0 100% 0)', duration: 1.1, ease: 'expo.inOut' }, '-=.1')
-      .to(heroChars, { yPercent: 0, duration: 1.2, stagger: .025, ease: 'expo.out' }, '-=.55')
-      .add(function () { window.dispatchEvent(new Event('hero:intro')); }, '-=.9')
-      .to(['.nav', '.hero__eyebrow', '.hero__lead', '.hero__cta > *', '.hero__trust', '.hero__side > *'], { opacity: 1, y: 0, stagger: .07, duration: 1.1, ease: 'expo.out', clearProps: 'transform' }, '-=1.1');
+      .to(heroChars, { yPercent: 0, opacity: 1, duration: 1.3, stagger: .12, ease: 'expo.out' }, '-=.55')
+      .to('.px__portrait img', { yPercent: 0, opacity: 1, duration: 1.5, ease: 'expo.out', clearProps: 'transform' }, '-=1.1')
+      .to('.ptile', { opacity: 1, duration: .8, stagger: { each: .06, from: 'random' }, ease: 'power2.out' }, '-=1.1')
+      .to(['.nav', '.px__intro > *', '.px__actions > *'], { opacity: 1, y: 0, stagger: .07, duration: 1.1, ease: 'expo.out', clearProps: 'transform' }, '-=1');
   }
 
   /* ---------- scroll progress ---------- */
@@ -291,8 +295,37 @@
       .to('.bgfx__b--1', { x: '-60vw', y: '110vh', '--c': 'rgba(255,90,31,.22)', duration: 1 })
       .to('.bgfx__b--2', { x: '70vw', y: '-60vh', '--c': 'rgba(201,52,24,.18)', duration: 1 }, '<');
 
-  /* ---------- hero parallax on scroll ---------- */
-  gsap.to('.hero__glow', { scale: 1.4, opacity: .3, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+  /* ---------- hero scroll parallax ----------
+     The stage is pinned while: the portrait rises, the name lifts and its
+     outlined echoes fan out below it, and the tool tiles fly outwards from
+     behind the portrait, each at its own speed. */
+  function heroParallax() {
+    var stage = $('.px__stage');
+    if (!stage || heroParallax.done) return;
+    heroParallax.done = true;
+    var sr = stage.getBoundingClientRect();
+    var cx = sr.left + sr.width / 2, cy = sr.top + sr.height * .55;
+    var tl = gsap.timeline({
+      defaults: { ease: 'none' },
+      scrollTrigger: { trigger: '.hero--px', start: 'top top', end: '+=110%', pin: '.px__stage', scrub: 1, anticipatePin: 1, invalidateOnRefresh: true }
+    });
+    tl.fromTo('.px__portrait', { yPercent: 14, scale: .94 }, { yPercent: -4, scale: 1.04, duration: 1 }, 0)
+      .fromTo('.px__title', { yPercent: 0, scale: 1 }, { yPercent: -26, scale: .94, duration: 1 }, 0)
+      .to('.hero__glow', { scale: 1.3, opacity: .5, duration: 1 }, 0)
+      .to('.px__bar', { opacity: 0, y: 40, duration: .45 }, .55);
+    $$('.px__echo').forEach(function (el, i) {
+      tl.fromTo(el, { yPercent: 0, opacity: 0 }, { yPercent: (i + 1) * 34, opacity: .9 - i * .25, duration: .8 }, .05 + i * .06);
+    });
+    $$('.ptile').forEach(function (el) {
+      var r = el.getBoundingClientRect();
+      var dx = (cx - (r.left + r.width / 2)) * .62, dy = (cy - (r.top + r.height / 2)) * .62;
+      var rot = gsap.getProperty(el, 'rotation');
+      var depth = parseFloat(getComputedStyle(el).width) / 110;     // bigger tiles feel closer and move further
+      tl.fromTo(el, { x: dx, y: dy, scale: .55, rotation: 0 },
+        { x: -dx * .12 * depth, y: -dy * .18 * depth - 40 * depth, scale: 1 + depth * .12, rotation: rot * 1.6, duration: 1 }, 0);
+    });
+    ScrollTrigger.refresh();
+  }
 
   /* hero glow follows the mouse */
   if (finePointer) {
