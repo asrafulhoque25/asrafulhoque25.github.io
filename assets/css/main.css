@@ -672,7 +672,7 @@ html:not(.anim) .gallery__row[data-dir="-1"] { animation-direction: reverse; }
 .ptile { --sz: clamp(56px, 5.2vw, 92px); }
 .pt--1  { left: 22%;  top: 31%; transform: rotate(-8deg);  --d: -1s; }
 .pt--7  { left: 11.5%; top: 41%; transform: rotate(6deg);   --d: -3.2s; }
-.pt--3  { left: 24%;  top: 51%; transform: rotate(-5deg);  --d: -2s; }
+.pt--3  { left: 24%;  top: 49%; transform: rotate(-5deg);  --d: -2s; }
 .pt--5  { left: 6%;   top: 58%; transform: rotate(8deg);   --d: -5s; }
 .pt--9  { left: 9%;   top: 74%; transform: rotate(-6deg);  --d: -.6s; }
 .pt--2  { right: 22%; top: 31%; transform: rotate(8deg);   --d: -3s; }
@@ -684,10 +684,10 @@ html:not(.anim) .gallery__row[data-dir="-1"] { animation-direction: reverse; }
 
 /* Handwritten note beside the portrait */
 .px__note {
-  position: absolute; left: 30%; top: 63%; z-index: 6; transform: translateX(-100%) rotate(-4deg);
+  position: absolute; left: 31%; top: 66%; z-index: 6; transform: translateX(-100%) rotate(-4deg);
   font-family: "Caveat", cursive; font-weight: 600; font-size: clamp(20px, 1.7vw, 28px); line-height: 1.15; color: #ffd84d; text-align: right;
 }
-.px__note svg { display: block; width: 110px; margin: 6px 0 0 auto; color: #ffd84d; transform: scaleY(-1) rotate(-6deg); }
+.px__note svg { display: block; width: 96px; margin: 10px 0 0 auto; color: #ffd84d; transform: rotate(4deg); }
 
 /* Bottom bar: tagline left, actions right */
 .px__bar {
@@ -873,3 +873,12 @@ html:not(.anim) .gallery__row[data-dir="-1"] { animation-direction: reverse; }
 .prow__arrow .i, .crow__a .i { width: 20px; height: 20px; stroke-width: 2.2; }
 .chip .i, .link .i, .hero__link .i { stroke-width: 2.4; }
 .svc__icon .i { stroke-width: 1.7; }
+
+/* Short laptop screens: keep the lowest tile clear of the tagline */
+@media (min-width: 901px) and (max-height: 820px) {
+  .pt--9 { display: none; }
+  .pt--10 { top: 66%; }
+}
+.ptile--ai .ptile__face { gap: 0; }
+.ptile--ai .ai-i { width: .72em; height: .72em; stroke-width: 2.2; display: block; }
+.ptile--ai i { font-size: 1em; }
