@@ -810,8 +810,8 @@ html:not(.anim) .gallery__row[data-dir="-1"] { animation-direction: reverse; }
 .title, .contact__title, .loader__name, .footer__big, .marquee__item, .isyou__title, .toss__title, .px__title, .px__echo {
   font-family: var(--f-head); font-weight: 400; text-transform: uppercase; letter-spacing: .005em;
 }
-.title { font-size: clamp(52px, 8.2vw, 140px); line-height: .92; }
-.contact__title { font-size: clamp(56px, 10.5vw, 190px); line-height: .9; }
+.title { font-size: clamp(42px, 5.8vw, 96px); line-height: 1; padding-top: .04em; }
+.contact__title { font-size: clamp(52px, 8vw, 140px); line-height: .98; }
 .loader__name { line-height: .92; }
 .loader__name span:last-child { font-family: inherit; font-style: normal; color: var(--accent); }
 .marquee__item { font-size: clamp(36px, 5.6vw, 84px); gap: 44px; }
@@ -851,6 +851,25 @@ html:not(.anim) .gallery__row[data-dir="-1"] { animation-direction: reverse; }
 .socials { max-width: 520px; }
 
 /* Fiverr's mark is the lowercase "fi"; brand wordmarks are too small inside round buttons */
-.bi-fi { font-family: var(--f-display); font-weight: 800; font-size: 17px; letter-spacing: -.04em; line-height: 1; }
-.footer__social .bi-fi { font-size: 15px; }
 .bi--devto { width: 22px; height: 22px; }
+
+/* Breathing room between labels, headlines and what follows */
+.section__head { gap: 14px; }
+.gallery__head { padding-bottom: clamp(40px, 5vw, 72px); align-items: flex-end; }
+.gallery__head .title { max-width: 900px; }
+.isyou__title { font-size: clamp(56px, 7vw, 120px); line-height: .95; }
+.toss__title { font-size: clamp(46px, 6.2vw, 108px); line-height: .96; }
+
+/* Icon visibility: brighter, larger, filled buttons */
+.socials a, .footer__social a {
+  color: var(--bone); background: rgba(241, 238, 230, .06); border-color: rgba(241, 238, 230, .22);
+}
+.socials a { width: 52px; height: 52px; }
+.socials .bi { width: 22px; height: 22px; }
+.footer__social a { width: 46px; height: 46px; }
+.footer__social .bi { width: 20px; height: 20px; }
+.bi-fi-stroke { fill: none; }
+.prow__arrow, .crow__a { color: var(--bone); }
+.prow__arrow .i, .crow__a .i { width: 20px; height: 20px; stroke-width: 2.2; }
+.chip .i, .link .i, .hero__link .i { stroke-width: 2.4; }
+.svc__icon .i { stroke-width: 1.7; }
