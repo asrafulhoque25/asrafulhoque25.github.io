@@ -239,20 +239,15 @@
 
   var heroChars = $$('.hero__title .c');
   gsap.set(heroChars, { yPercent: 115 });
-  // New hero: portrait card reveals from the bottom, badges pop in
-  gsap.set('.hero__portrait', { clipPath: 'inset(100% 0% 0% 0% round 32px)' });
-  gsap.set('.hero__frame img', { scale: 1.35 });
-  gsap.set('.hb', { opacity: 0, scale: .6 });
-  gsap.set('.hero__orbit', { opacity: 0, scale: .85 });
-  gsap.set(['.hero__eyebrow', '.hero__lead', '.hero__rotator', '.hero__cta > *', '.hero__stats li', '.hero__trust', '.hero__card', '.hero__exp', '.nav'], { opacity: 0, y: 24 });
-  gsap.set('.hero__ambient', { opacity: 0 });
+  // Particle hero: text and side details fade up; particles assemble on their own
+  gsap.set(['.hero__arrow', '.hero__eyebrow', '.hero__lead', '.hero__cta > *', '.hero__trust', '.hero__side > *', '.hero__dock', '.nav'], { opacity: 0, y: 24 });
 
   /* ---------- preloader ---------- */
   var loader = $('.loader');
   var num = $('.loader__num');
   var counter = { v: 0 };
   var imgReady = new Promise(function (res) {
-    var im = $('.hero__frame img');
+    var im = $('.hero__reveal');
     if (!im || im.complete) return res();
     im.addEventListener('load', res); im.addEventListener('error', res);
     setTimeout(res, 2500);
@@ -278,14 +273,8 @@
     tl.to('.loader__inner, .loader__bar', { opacity: 0, y: -30, duration: .5, ease: 'power2.in' })
       .to(loader, { clipPath: 'inset(0 0 100% 0)', duration: 1.1, ease: 'expo.inOut' }, '-=.1')
       .to(heroChars, { yPercent: 0, duration: 1.2, stagger: .025, ease: 'expo.out' }, '-=.55')
-      .to('.hero__portrait', { clipPath: 'inset(0% 0% 0% 0% round 32px)', duration: 1.4, ease: 'expo.inOut', clearProps: 'clipPath' }, '-=1.1')
-      .to('.hero__frame img', { scale: 1.04, duration: 1.8, ease: 'expo.out' }, '<')
-      .to('.hero__orbit', { opacity: 1, scale: 1, duration: 1.4, ease: 'expo.out' }, '<.3')
-      .to('.hero__ambient', { opacity: 1, duration: 2.2, ease: 'power2.out' }, '<')
-      .to(['.nav', '.hero__eyebrow', '.hero__lead', '.hero__rotator', '.hero__cta > *', '.hero__stats li', '.hero__trust'], { opacity: 1, y: 0, stagger: .07, duration: 1.1, ease: 'expo.out', clearProps: 'transform' }, '-=1.2')
-      .to(['.hero__card', '.hero__exp'], { opacity: 1, y: 0, stagger: .12, duration: 1.1, ease: 'expo.out' }, '-=.9')
-      .to('.hb', { opacity: 1, scale: 1, stagger: .12, duration: .8, ease: 'back.out(1.8)', clearProps: 'transform' }, '-=.8')
-      .add(countUp, '-=1');
+      .add(function () { window.dispatchEvent(new Event('hero:intro')); }, '-=.9')
+      .to(['.nav', '.hero__arrow', '.hero__eyebrow', '.hero__lead', '.hero__cta > *', '.hero__trust', '.hero__side > *', '.hero__dock'], { opacity: 1, y: 0, stagger: .07, duration: 1.1, ease: 'expo.out', clearProps: 'transform' }, '-=1.1');
   }
 
   /* ---------- scroll progress ---------- */
@@ -305,36 +294,7 @@
   /* ---------- hero parallax on scroll ---------- */
   gsap.to('.hero__title', { yPercent: -8, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
   gsap.to('.hero__glow', { scale: 1.4, opacity: .3, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
-  gsap.to('.hero__visual', { yPercent: -10, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
-
-  /* hero stats count up */
-  function countUp() {
-    $$('.hero__stats [data-count]').forEach(function (el) {
-      var end = +el.dataset.count, start = end > 1000 ? end - 30 : 0, o = { v: start };
-      gsap.to(o, { v: end, duration: 1.6, ease: 'power2.out', onUpdate: function () { el.textContent = Math.round(o.v); } });
-    });
-  }
-
-  /* hero portrait 3D tilt follows the mouse */
-  var tiltEl = $('[data-tilt]');
-  if (tiltEl && finePointer) {
-    var rx = gsap.quickTo(tiltEl, 'rotationX', { duration: 1.4, ease: 'power3.out' });
-    var ry = gsap.quickTo(tiltEl, 'rotationY', { duration: 1.4, ease: 'power3.out' });
-    var amb = $('.hero__ambient');
-    var ax = amb ? gsap.quickTo(amb, 'x', { duration: 2, ease: 'power3.out' }) : null;
-    var ay = amb ? gsap.quickTo(amb, 'y', { duration: 2, ease: 'power3.out' }) : null;
-    $('.hero').addEventListener('mousemove', function (e) {
-      var r = tiltEl.getBoundingClientRect();
-      var px = (e.clientX - (r.left + r.width / 2)) / window.innerWidth;
-      var py = (e.clientY - (r.top + r.height / 2)) / window.innerHeight;
-      ry(px * 10); rx(-py * 10);
-      if (ax) { ax(-px * 40); ay(-py * 40); }
-      // Spotlight position inside the photo
-      tiltEl.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
-      tiltEl.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
-    });
-    $('.hero').addEventListener('mouseleave', function () { rx(0); ry(0); });
-  }
+  gsap.to('.hero__figure', { yPercent: -6, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
 
   /* hero glow follows the mouse */
   if (finePointer) {
