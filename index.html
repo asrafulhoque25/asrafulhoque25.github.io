@@ -44,7 +44,7 @@
   <link rel="preload" href="assets/fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/instrument-serif-italic.woff2" as="font" type="font/woff2" crossorigin>
 
-  <link rel="preload" as="image" href="assets/images/asraful-hero.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="assets/images/asraful-cutout.webp" fetchpriority="high">
   <link rel="stylesheet" href="assets/css/main.css">
   <script>document.documentElement.classList.add('js');</script>
 
@@ -225,72 +225,51 @@
   <main id="main">
 
     <!-- HERO -->
-    <section class="hero" id="home" aria-labelledby="hero-title">
+    <section class="hero hero--particles" id="home" aria-labelledby="hero-title">
       <div class="hero__glow" aria-hidden="true"></div>
-      <div class="hero__grid" aria-hidden="true"></div>
 
-      <div class="hero__top">
-        <p class="eyebrow hero__eyebrow"><span class="dot"></span>Md Asraful Hoque (Emon) &nbsp;/&nbsp; Based in Dhaka, Bangladesh</p>
-        <p class="eyebrow hero__eyebrow hero__clock">Local time <span data-clock>--:--</span> GMT+6</p>
-      </div>
+      <div class="hero__stage">
+        <aside class="hero__side">
+          <div class="hero__loc">
+            <canvas class="hero__globe" width="160" height="160" aria-hidden="true"></canvas>
+            <div>
+              <p><b>Dhaka</b> <span data-clock>--:--</span></p>
+              <p class="hero__loc-sub">GMT+6 · 6 hours ahead of London</p>
+            </div>
+          </div>
+          <p class="hero__avail"><i></i>Open for freelance &amp; remote work</p>
+        </aside>
 
-      <div class="hero__main">
+        <div class="hero__figure" data-particles>
+          <img class="hero__reveal" src="assets/images/asraful-cutout.webp" alt="Md Asraful Hoque, full-stack web developer in Dhaka" width="900" height="900" fetchpriority="high">
+          <canvas class="hero__particles" aria-hidden="true"></canvas>
+          <span class="hero__hint" aria-hidden="true">Move your cursor ↗</span>
+        </div>
+
         <div class="hero__text">
+          <span class="hero__arrow" aria-hidden="true">↘</span>
+          <p class="eyebrow hero__eyebrow">Md Asraful Hoque (Emon)</p>
           <h1 class="hero__title" id="hero-title">
             <span class="visually-hidden">Md Asraful Hoque, </span>
-            <span class="line"><span class="split-chars">Full-Stack</span></span>
-            <span class="line"><span class="split-chars">Developer</span></span>
+            <span class="line"><span class="split-chars">Full-Stack Developer,</span></span>
             <span class="line line--sub"><em class="serif split-chars">from Figma to deploy.</em></span>
           </h1>
-
-          <p class="hero__lead">I build complete websites, web apps and online stores, front to back. React and Next.js for products, Shopify for e-commerce, custom WordPress and Webflow for marketing sites, with AI features, the CMS and integrations wired in.</p>
-
-          <div class="hero__rotator" aria-live="off">
-          <span class="eyebrow">Currently building</span>
-          <span class="rotator"><span class="rotator__word">Next.js web apps</span><span class="rotator__word">Shopify stores</span><span class="rotator__word">AI chatbots</span><span class="rotator__word">custom WordPress themes</span><span class="rotator__word">Webflow sites</span><span class="rotator__word">React dashboards</span><span class="rotator__word">agency websites</span></span>
-        </div>
-
+          <p class="hero__lead">I build fast websites, web apps and Shopify stores with Next.js, WordPress and Webflow, plus the AI features and integrations behind them.</p>
           <div class="hero__cta">
-          <a href="#work" class="btn btn--accent" data-magnetic><span>See my work</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
-          <a href="#contact" class="btn btn--ghost" data-magnetic><span>Hire me</span></a>
-        </div>
-
-          <ul class="hero__stats" aria-label="At a glance">
-            <li><b data-count="2018">2018</b><span>Building since</span></li>
-            <li><b><span data-count="19">19</span>+</b><span>Projects shipped</span></li>
-            <li><b data-count="6">6</b><span>Core services</span></li>
-          </ul>
-
+            <a href="#contact" class="btn btn--accent" data-magnetic><span>Let's talk</span></a>
+            <a href="#work" class="hero__link">See the work <span aria-hidden="true">↘</span></a>
+          </div>
           <div class="hero__trust">
             <span class="eyebrow">Trusted by</span>
             <ul><li>Pixxen</li><li>Pexnet</li><li>Quecut</li><li>Wadi Al Bada IT</li></ul>
           </div>
         </div>
-
-        <div class="hero__visual">
-          <div class="hero__ambient" aria-hidden="true"><img src="assets/images/asraful-hero.webp" alt="" width="960" height="1200"></div>
-          <div class="hero__orbit" aria-hidden="true"></div>
-          <figure class="hero__portrait" data-tilt>
-            <span class="hero__ring" aria-hidden="true"></span>
-            <span class="hero__exp" aria-hidden="true"><b>8+</b>years<br>experience</span>
-            <span class="hero__frame">
-              <span class="hero__spot" aria-hidden="true"></span>
-              <img src="assets/images/asraful-hero.webp" alt="Md Asraful Hoque, full-stack web developer in Dhaka" width="960" height="1200" fetchpriority="high">
-            </span>
-            <figcaption class="hero__card">
-              <span class="hero__card-status"><i></i>Available for work</span>
-              <b>Md Asraful Hoque</b>
-              <span>Full-Stack Developer · Shopify &amp; AI</span>
-            </figcaption>
-          </figure>
-          <ul class="hero__badges" aria-hidden="true">
-            <li class="hb hb--1"><i>S</i>Shopify</li>
-            <li class="hb hb--2"><i>N</i>Next.js</li>
-            <li class="hb hb--3 hb--accent"><i>✦</i>AI Integrations</li>
-            <li class="hb hb--4"><i>W</i>WordPress</li>
-          </ul>
-        </div>
       </div>
+
+      <nav class="hero__dock" aria-label="Skills">
+        <span class="hero__dock-code" aria-hidden="true">&lt;/&gt;</span>
+        <span class="is-on">Shopify</span><span>Next.js</span><span>WordPress</span><span>Webflow</span><span class="hero__dock-ai">✦ AI</span>
+      </nav>
     </section>
 
     <!-- MARQUEE -->
@@ -794,5 +773,6 @@
   <script src="assets/js/vendor/ScrollTrigger.min.js" defer></script>
   <script src="assets/js/vendor/lenis.min.js" defer></script>
   <script src="assets/js/main.js" defer></script>
+  <script src="assets/js/hero-particles.js" defer></script>
 </body>
 </html>
