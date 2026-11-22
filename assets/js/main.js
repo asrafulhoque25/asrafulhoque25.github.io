@@ -318,11 +318,12 @@
     });
     $$('.ptile').forEach(function (el) {
       var r = el.getBoundingClientRect();
-      var dx = (cx - (r.left + r.width / 2)) * .62, dy = (cy - (r.top + r.height / 2)) * .62;
+      var pull = window.innerWidth < 900 ? .12 : .3;
+      var dx = (cx - (r.left + r.width / 2)) * pull, dy = (cy - (r.top + r.height / 2)) * pull;
       var rot = gsap.getProperty(el, 'rotation');
-      var depth = parseFloat(getComputedStyle(el).width) / 110;     // bigger tiles feel closer and move further
-      tl.fromTo(el, { x: dx, y: dy, scale: .55, rotation: 0 },
-        { x: -dx * .12 * depth, y: -dy * .18 * depth - 40 * depth, scale: 1 + depth * .12, rotation: rot * 1.6, duration: 1 }, 0);
+      var depth = parseFloat(getComputedStyle(el).width) / 130;     // bigger tiles feel closer and move further
+      tl.fromTo(el, { x: dx, y: dy, scale: .9, rotation: rot * .4 },
+        { x: -dx * .25 * depth, y: -Math.abs(dy) * .3 * depth - 40 * depth, scale: 1 + depth * .08, rotation: rot * 1.5, duration: 1 }, 0);
     });
     ScrollTrigger.refresh();
   }
