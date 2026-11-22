@@ -239,17 +239,19 @@
 
   var heroChars = $$('.hero__title .c');
   gsap.set(heroChars, { yPercent: 115 });
-  var heroPic = $('.hero__pic');
-  var picW = heroPic ? getComputedStyle(heroPic).width : 0;
-  gsap.set(heroPic, { width: 0 });
-  gsap.set(['.hero__eyebrow', '.hero__lead', '.hero__rotator', '.hero__cta > *', '.nav'], { opacity: 0, y: 24 });
+  // New hero: portrait card reveals from the bottom, badges pop in
+  gsap.set('.hero__portrait', { clipPath: 'inset(100% 0% 0% 0% round 32px)' });
+  gsap.set('.hero__frame img', { scale: 1.35 });
+  gsap.set('.hb', { opacity: 0, scale: .6 });
+  gsap.set('.hero__orbit', { opacity: 0, scale: .85 });
+  gsap.set(['.hero__eyebrow', '.hero__lead', '.hero__rotator', '.hero__cta > *', '.hero__stats li', '.hero__card', '.nav'], { opacity: 0, y: 24 });
 
   /* ---------- preloader ---------- */
   var loader = $('.loader');
   var num = $('.loader__num');
   var counter = { v: 0 };
   var imgReady = new Promise(function (res) {
-    var im = $('.hero__pic img');
+    var im = $('.hero__frame img');
     if (!im || im.complete) return res();
     im.addEventListener('load', res); im.addEventListener('error', res);
     setTimeout(res, 2500);
@@ -275,8 +277,13 @@
     tl.to('.loader__inner, .loader__bar', { opacity: 0, y: -30, duration: .5, ease: 'power2.in' })
       .to(loader, { clipPath: 'inset(0 0 100% 0)', duration: 1.1, ease: 'expo.inOut' }, '-=.1')
       .to(heroChars, { yPercent: 0, duration: 1.2, stagger: .025, ease: 'expo.out' }, '-=.55')
-      .to(heroPic, { width: picW, duration: 1.3, ease: 'expo.inOut', clearProps: 'width' }, '-=1.1')
-      .to(['.nav', '.hero__eyebrow', '.hero__lead', '.hero__rotator', '.hero__cta > *'], { opacity: 1, y: 0, stagger: .07, duration: 1, ease: 'expo.out', clearProps: 'transform' }, '-=1');
+      .to('.hero__portrait', { clipPath: 'inset(0% 0% 0% 0% round 32px)', duration: 1.4, ease: 'expo.inOut', clearProps: 'clipPath' }, '-=1.1')
+      .to('.hero__frame img', { scale: 1.04, duration: 1.8, ease: 'expo.out' }, '<')
+      .to('.hero__orbit', { opacity: 1, scale: 1, duration: 1.4, ease: 'expo.out' }, '<.3')
+      .to(['.nav', '.hero__eyebrow', '.hero__lead', '.hero__rotator', '.hero__cta > *', '.hero__stats li'], { opacity: 1, y: 0, stagger: .07, duration: 1, ease: 'expo.out', clearProps: 'transform' }, '-=1.2')
+      .to('.hero__card', { opacity: 1, y: 0, duration: .9, ease: 'expo.out' }, '-=.9')
+      .to('.hb', { opacity: 1, scale: 1, stagger: .12, duration: .8, ease: 'back.out(1.8)', clearProps: 'transform' }, '-=.8')
+      .add(countUp, '-=1');
   }
 
   /* ---------- scroll progress ---------- */
@@ -294,9 +301,31 @@
       .to('.bgfx__b--2', { x: '70vw', y: '-60vh', '--c': 'rgba(201,52,24,.18)', duration: 1 }, '<');
 
   /* ---------- hero parallax on scroll ---------- */
-  gsap.to('.hero__title', { yPercent: -18, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+  gsap.to('.hero__title', { yPercent: -8, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
   gsap.to('.hero__glow', { scale: 1.4, opacity: .3, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
-  gsap.to('.hero__pic img', { scale: 1.45, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+  gsap.to('.hero__visual', { yPercent: -10, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+
+  /* hero stats count up */
+  function countUp() {
+    $$('.hero__stats [data-count]').forEach(function (el) {
+      var end = +el.dataset.count, start = end > 1000 ? end - 30 : 0, o = { v: start };
+      gsap.to(o, { v: end, duration: 1.6, ease: 'power2.out', onUpdate: function () { el.textContent = Math.round(o.v); } });
+    });
+  }
+
+  /* hero portrait 3D tilt follows the mouse */
+  var tiltEl = $('[data-tilt]');
+  if (tiltEl && finePointer) {
+    var rx = gsap.quickTo(tiltEl, 'rotationX', { duration: .8, ease: 'power3' });
+    var ry = gsap.quickTo(tiltEl, 'rotationY', { duration: .8, ease: 'power3' });
+    $('.hero').addEventListener('mousemove', function (e) {
+      var r = tiltEl.getBoundingClientRect();
+      var px = (e.clientX - (r.left + r.width / 2)) / window.innerWidth;
+      var py = (e.clientY - (r.top + r.height / 2)) / window.innerHeight;
+      ry(px * 14); rx(-py * 14);
+    });
+    $('.hero').addEventListener('mouseleave', function () { rx(0); ry(0); });
+  }
 
   /* hero glow follows the mouse */
   if (finePointer) {
