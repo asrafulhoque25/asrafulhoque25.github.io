@@ -5,6 +5,7 @@
 
 @font-face { font-family: "Bricolage Grotesque"; src: url("../fonts/bricolage-grotesque.woff2") format("woff2-variations"), url("../fonts/bricolage-grotesque.woff2") format("woff2"); font-weight: 200 800; font-stretch: 75% 100%; font-style: normal; font-display: swap; }
 @font-face { font-family: "Anton"; src: url("../fonts/anton.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Caveat"; src: url("../fonts/caveat.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
 @font-face { font-family: "Instrument Serif"; src: url("../fonts/instrument-serif-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
 @font-face { font-family: "JetBrains Mono"; src: url("../fonts/jetbrains-mono-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
 @font-face { font-family: "JetBrains Mono"; src: url("../fonts/jetbrains-mono-500.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
@@ -662,17 +663,26 @@ html:not(.anim) .gallery__row[data-dir="-1"] { animation-direction: reverse; }
 .ptile--ai .ptile__face { font-size: clamp(20px, 2vw, 34px); align-content: center; gap: 2px; }
 @keyframes px-bob { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(0, -10px, 0); } }
 
-/* Final resting places (the scroll animation starts from the centre) */
-.pt--1  { left: 9%;  top: 30%; --sz: clamp(90px, 9.4vw, 170px); transform: rotate(-14deg); z-index: 5; --d: -1s; }
-.pt--2  { right: 10%; top: 27%; transform: rotate(11deg); z-index: 5; --d: -3s; }
-.pt--3  { left: 22%; top: 58%; --sz: clamp(70px, 6.8vw, 120px); transform: rotate(9deg); --d: -2s; }
-.pt--4  { right: 21%; top: 56%; --sz: clamp(70px, 7vw, 124px); transform: rotate(-9deg); --d: -4.4s; }
-.pt--5  { left: 4%;  top: 66%; transform: rotate(12deg); z-index: 5; --d: -5s; }
-.pt--6  { right: 4%; top: 62%; --sz: clamp(84px, 8.8vw, 156px); transform: rotate(-12deg); z-index: 5; --d: -1.6s; }
-.pt--7  { left: 27%; top: 8%; --sz: clamp(62px, 5.8vw, 104px); transform: rotate(-7deg); --d: -2.8s; }
-.pt--8  { right: 26%; top: 6%; --sz: clamp(62px, 6vw, 106px); transform: rotate(14deg); --d: -3.6s; }
-.pt--9  { left: 15%; top: 74%; --sz: clamp(66px, 6.4vw, 114px); transform: rotate(-6deg); z-index: 5; --d: -.6s; }
-.pt--10 { right: 16%; top: 70%; --sz: clamp(80px, 8.2vw, 146px); transform: rotate(8deg); z-index: 5; --d: -4s; }
+/* Final resting places: two tidy, mirrored columns beside the portrait */
+.ptile { --sz: clamp(56px, 5.2vw, 92px); }
+.pt--1  { left: 22%;  top: 31%; transform: rotate(-8deg);  --d: -1s; }
+.pt--7  { left: 11.5%; top: 41%; transform: rotate(6deg);   --d: -3.2s; }
+.pt--3  { left: 24%;  top: 51%; transform: rotate(-5deg);  --d: -2s; }
+.pt--5  { left: 6%;   top: 58%; transform: rotate(8deg);   --d: -5s; }
+.pt--9  { left: 9%;   top: 74%; transform: rotate(-6deg);  --d: -.6s; }
+.pt--2  { right: 22%; top: 31%; transform: rotate(8deg);   --d: -3s; }
+.pt--8  { right: 11.5%; top: 41%; transform: rotate(-6deg); --d: -3.6s; }
+.pt--4  { right: 24%; top: 51%; transform: rotate(5deg);   --d: -4.4s; }
+.pt--6  { right: 6%;  top: 58%; transform: rotate(-8deg);  --d: -1.6s; }
+.pt--10 { right: 15%; top: 70%; transform: rotate(6deg); --sz: clamp(60px, 5.6vw, 98px); --d: -4s; }
+.pt--1, .pt--2, .pt--3, .pt--4, .pt--10 { z-index: 5; }
+
+/* Handwritten note beside the portrait */
+.px__note {
+  position: absolute; left: 30%; top: 63%; z-index: 6; transform: translateX(-100%) rotate(-4deg);
+  font-family: "Caveat", cursive; font-weight: 600; font-size: clamp(20px, 1.7vw, 28px); line-height: 1.15; color: #ffd84d; text-align: right;
+}
+.px__note svg { display: block; width: 110px; margin: 6px 0 0 auto; color: #ffd84d; transform: scaleY(-1) rotate(-6deg); }
 
 /* Bottom bar: tagline left, actions right */
 .px__bar {
@@ -700,12 +710,86 @@ html:not(.anim) .gallery__row[data-dir="-1"] { animation-direction: reverse; }
   .px__word, .px__echo > span { display: block; }
   .px__portrait { width: 112vw; bottom: 150px; }
   .ptile { --sz: 56px !important; }
-  .pt--10 { left: 4%; right: auto; top: 44%; } .pt--6 { right: 4%; top: 43%; }
-  .pt--1 { left: 3%; top: 54%; } .pt--2 { right: 3%; top: 53%; }
-  .pt--3 { left: 7%; top: 63%; } .pt--4 { right: 7%; top: 62%; }
-  .pt--5, .pt--7, .pt--8, .pt--9 { display: none; }
-  .px__bar::before { content: ""; position: absolute; left: calc(-1 * var(--gutter)); right: calc(-1 * var(--gutter)); bottom: -20px; height: calc(100% + 120px); background: linear-gradient(transparent, rgba(13, 13, 12, .92) 45%); z-index: -1; pointer-events: none; }
+  .px__note { display: none; }
+  .pt--1 { left: 4%; top: 41%; } .pt--3 { left: 6%; top: 50%; } .pt--7 { left: 3%; top: 59%; }
+  .pt--2 { right: 4%; top: 41%; } .pt--4 { right: 6%; top: 50%; } .pt--10 { right: 3%; top: 59%; left: auto; }
+  .pt--5, .pt--6, .pt--8, .pt--9 { display: none; }
+  .px__bar::before { content: ""; position: absolute; left: calc(-1 * var(--gutter)); right: calc(-1 * var(--gutter)); bottom: -20px; height: calc(100% + 50px); background: linear-gradient(transparent, rgba(13, 13, 12, .92) 40%); z-index: -1; pointer-events: none; }
   .px__bar { flex-direction: column; align-items: flex-start; bottom: 20px; }
   .px__actions { align-items: flex-start; }
   .px__trust { justify-content: flex-start; }
 }
+
+/* =========================================================
+   Shared: handwritten highlight tag
+   ========================================================= */
+.tag-hand {
+  display: inline-block; padding: 4px 14px 6px; border-radius: 6px; transform: rotate(-3deg);
+  background: #ffd84d; color: #1a1306; font-family: "Caveat", cursive; font-weight: 600; font-size: clamp(22px, 2vw, 30px); line-height: 1.1;
+  box-shadow: 0 8px 20px -10px rgba(0, 0, 0, .5);
+}
+
+/* =========================================================
+   Is this you? (light section with a notepad card)
+   ========================================================= */
+.isyou { position: relative; background: var(--bone); color: var(--ink); border-radius: clamp(24px, 3vw, 48px); margin: clamp(48px, 6vw, 96px) clamp(8px, 1.5vw, 24px); }
+.isyou__inner { max-width: var(--max); margin: 0 auto; padding: clamp(64px, 8vw, 128px) var(--gutter); display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(32px, 5vw, 88px); align-items: center; }
+.isyou__title { font-family: "Anton", sans-serif; font-weight: 400; text-transform: uppercase; font-size: clamp(64px, 8.5vw, 150px); line-height: .9; letter-spacing: .005em; color: var(--ink); margin-bottom: 24px; }
+.isyou__copy > p { font-size: clamp(17px, 1.4vw, 20px); color: #3d3a35; max-width: 470px; margin-bottom: 26px; }
+.isyou__copy .tag-hand { margin-bottom: 34px; }
+.isyou__fix { font-size: 16px !important; }
+.isyou__fix .link { color: var(--ink); border-bottom: 2px solid var(--accent); font-weight: 600; }
+.isyou__fix .link:hover { color: var(--accent); }
+
+.note {
+  position: relative; border-radius: 26px; overflow: hidden; transform: rotate(1.2deg);
+  background: #fff6c9;
+  box-shadow: 0 40px 70px -30px rgba(40, 30, 10, .45), 0 2px 0 rgba(0, 0, 0, .04);
+  transition: transform .6s var(--ease);
+}
+.note:hover { transform: rotate(0deg); }
+.note::before { content: ""; position: absolute; top: 0; bottom: 0; left: 88px; width: 1.5px; background: rgba(230, 90, 90, .55); }
+.note__top { height: 58px; background: #ffd84d; border-bottom: 2px dashed rgba(26, 19, 6, .35); }
+.note__list { padding: 6px 0 18px; }
+.note__list li { padding-right: 26px; }
+.note__list li { display: flex; align-items: center; gap: 44px; min-height: 4.6em; padding-top: 10px; padding-bottom: 10px; border-bottom: 1px solid #eadfa8; padding-left: 24px; font-size: clamp(15px, 1.25vw, 19px); line-height: 1.35; color: #1a1306; }
+.note__x { flex: none; width: 36px; height: 36px; color: #e0403a; }
+.note__x svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.note__x circle { stroke-width: 1.5; opacity: .55; }
+.note__list li:hover .note__x { transform: rotate(90deg) scale(1.08); transition: transform .4s var(--ease); }
+
+@media (max-width: 900px) {
+  .isyou__inner { grid-template-columns: 1fr; }
+  .note::before { left: 62px; }
+  .note__x { width: 30px; height: 30px; }
+  .toss { min-height: 860px; }
+  .pill { font-size: 15px; }
+  .note__list li { gap: 26px; padding-left: 14px; }
+}
+
+/* =========================================================
+   Everything your site needs: throwable pills
+   ========================================================= */
+.toss {
+  position: relative; overflow: hidden; margin: clamp(48px, 6vw, 96px) clamp(8px, 1.5vw, 24px); border-radius: clamp(24px, 3vw, 48px);
+  min-height: min(980px, 100svh); padding: clamp(64px, 7vw, 110px) var(--gutter) 0;
+  background: radial-gradient(120% 90% at 100% 0%, #ff8a5c 0%, #ff5a1f 42%, #c9341a 100%);
+  color: var(--ink); text-align: center;
+}
+.toss__head { position: relative; z-index: 2; max-width: 860px; margin: 0 auto; pointer-events: none; }
+.toss__head .tag-hand { pointer-events: auto; }
+.toss__title { font-family: "Anton", sans-serif; font-weight: 400; text-transform: uppercase; font-size: clamp(52px, 7.4vw, 130px); line-height: .92; letter-spacing: .005em; color: var(--ink); margin-bottom: 26px; }
+.toss__title span { color: rgba(255, 240, 230, .72); }
+.toss__head p { font-size: clamp(16px, 1.4vw, 20px); color: rgba(20, 10, 5, .86); max-width: 640px; margin: 0 auto 26px; }
+.toss__pills { position: absolute; inset: 0; z-index: 1; }
+.pill {
+  position: absolute; left: 0; top: 0; padding: .7em 1.4em; border-radius: 999px; white-space: nowrap; user-select: none; -webkit-user-select: none;
+  background: var(--bone); color: var(--ink); font-size: clamp(16px, 1.6vw, 24px); font-weight: 500; letter-spacing: -.01em;
+  box-shadow: 0 10px 24px -10px rgba(60, 15, 0, .55); cursor: grab; will-change: transform; touch-action: none;
+}
+.pill:nth-child(4n+2) { background: var(--ink); color: var(--bone); }
+.pill:nth-child(5n+3) { background: #ffd84d; }
+.pill.is-dragging { cursor: grabbing; }
+/* Before physics starts (or without JS) the pills sit in a neat wrap at the bottom */
+.toss__pills:not(.is-live) { display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-end; gap: 10px; padding: 0 var(--gutter) 28px; position: relative; inset: auto; margin-top: 48px; }
+.toss__pills:not(.is-live) .pill { position: static; }

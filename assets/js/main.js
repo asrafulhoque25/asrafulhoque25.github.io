@@ -316,14 +316,13 @@
     $$('.px__echo').forEach(function (el, i) {
       tl.fromTo(el, { yPercent: 0, opacity: 0 }, { yPercent: (i + 1) * 34, opacity: .9 - i * .25, duration: .8 }, .05 + i * .06);
     });
-    $$('.ptile').forEach(function (el) {
+    // Tiles keep their tidy layout: every tile drifts outward and up by the same amount
+    $$('.ptile').forEach(function (el, i) {
       var r = el.getBoundingClientRect();
-      var pull = window.innerWidth < 900 ? .12 : .3;
-      var dx = (cx - (r.left + r.width / 2)) * pull, dy = (cy - (r.top + r.height / 2)) * pull;
+      var side = (r.left + r.width / 2) < cx ? -1 : 1;
       var rot = gsap.getProperty(el, 'rotation');
-      var depth = parseFloat(getComputedStyle(el).width) / 130;     // bigger tiles feel closer and move further
-      tl.fromTo(el, { x: dx, y: dy, scale: .9, rotation: rot * .4 },
-        { x: -dx * .25 * depth, y: -Math.abs(dy) * .3 * depth - 40 * depth, scale: 1 + depth * .08, rotation: rot * 1.5, duration: 1 }, 0);
+      tl.fromTo(el, { x: -side * 24, y: 26, scale: .94, rotation: rot * .5 },
+        { x: side * 56, y: -70 - (i % 3) * 10, scale: 1.06, rotation: rot * 1.4, duration: 1 }, 0);
     });
     ScrollTrigger.refresh();
   }
