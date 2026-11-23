@@ -407,13 +407,56 @@
     whenVisible(e, function () { gsap.to(e, { opacity: 1, x: 0, duration: 1, ease: 'power3.out' }); }, .94);
   });
 
-  /* ---------- about statement: word scrub ---------- */
-  $$('.scrub-words').forEach(function (p) {
-    gsap.fromTo($$('.word', p), { opacity: .14 }, {
-      opacity: 1, stagger: .08, ease: 'none',
-      scrollTrigger: { trigger: p, start: 'top 80%', end: 'bottom 45%', scrub: true }
+
+  /* ---------- page theme: white while a light section fills the middle of the screen ---------- */
+  var lightSecs = $$('[data-theme="light"]');
+  function themeCheck() {
+    var mid = window.innerHeight * .5, light = false;
+    for (var i = 0; i < lightSecs.length; i++) {
+      var r = lightSecs[i].getBoundingClientRect();
+      if (r.top < mid && r.bottom > mid) { light = true; break; }
+    }
+    if (light !== doc.classList.contains('is-light')) doc.classList.toggle('is-light', light);
+  }
+
+  /* ---------- about statement: words go from blurred, bold and blue to sharp as you scroll ---------- */
+  var blurSets = $$('.blur-words').map(function (el) {
+    var words = [];
+    [].slice.call(el.childNodes).forEach(function (n) {
+      if (n.nodeType === 3) {
+        var frag = document.createDocumentFragment();
+        n.textContent.split(/(\s+)/).forEach(function (part) {
+          if (!part) return;
+          if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(' ')); return; }
+          var w = document.createElement('span'); w.className = 'word'; w.textContent = part;
+          frag.appendChild(w); words.push(w);
+        });
+        el.replaceChild(frag, n);
+      } else if (n.nodeType === 1) { n.classList.add('word'); words.push(n); }
     });
+    return { el: el, words: words, last: [] };
   });
+  function blurCheck() {
+    var vh = window.innerHeight;
+    blurSets.forEach(function (b) {
+      var r = b.el.getBoundingClientRect();
+      // 0 when the statement's top reaches 90% of the screen, 1 once it has risen well into view
+      var P = Math.min(1, Math.max(0, (vh * .9 - r.top) / (r.height + vh * .4)));
+      var n = b.words.length, k = 6;
+      b.words.forEach(function (w, i) {
+        var v = Math.min(1, Math.max(0, (P * (n + k) - i) / k));
+        v = Math.round(v * 100) / 100;
+        if (b.last[i] !== v) { b.last[i] = v; w.style.setProperty('--p', v); }
+      });
+    });
+  }
+
+  var tq = false;
+  function onFrame() { tq = false; themeCheck(); blurCheck(); }
+  function queueFrame() { if (!tq) { tq = true; requestAnimationFrame(onFrame); } }
+  window.addEventListener('scroll', queueFrame, { passive: true });
+  window.addEventListener('resize', queueFrame);
+  onFrame();
 
   /* ---------- counters ---------- */
   $$('[data-count]').forEach(function (el) {
