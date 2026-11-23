@@ -130,6 +130,12 @@
     lastY = y;
   }
   window.addEventListener('scroll', onScroll, { passive: true });
+  var scrollT;
+  window.addEventListener('scroll', function () {
+    if (!doc.classList.contains('is-scrolling')) doc.classList.add('is-scrolling');
+    clearTimeout(scrollT);
+    scrollT = setTimeout(function () { doc.classList.remove('is-scrolling'); }, 160);
+  }, { passive: true });
   onScroll();
 
   var navLinks = $$('.nav__links a');
@@ -379,8 +385,12 @@
   var small = window.matchMedia('(max-width: 900px)').matches;
   $$('[data-reveal]').forEach(function (el) {
     whenVisible(el, function (d) {
-      if (small) gsap.to(el, { opacity: 1, duration: .9, ease: 'sine.out' });
-      else gsap.to(el, { opacity: 1, y: 0, delay: d * 1.5, duration: 1.3, ease: 'power3.out', clearProps: 'transform' });
+      // Mark it revealed first: the CSS start state (hidden, 24px down) only applies
+      // to elements without .is-in, so clearing GSAP's inline transform at the end
+      // can never send the element back down.
+      el.classList.add('is-in');
+      if (small) gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: .9, ease: 'sine.out' });
+      else gsap.fromTo(el, { opacity: 0, y: 24 }, { opacity: 1, y: 0, delay: d * 1.5, duration: 1.3, ease: 'power3.out', clearProps: 'transform' });
     }, small ? 1.05 : .9);
   });
 
