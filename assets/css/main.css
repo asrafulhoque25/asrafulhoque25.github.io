@@ -937,3 +937,37 @@ html.is-scrolling body { pointer-events: none; }
 }
 .about__face img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
 @media (prefers-reduced-motion: reduce) { .blur-words .word { --p: 1 !important; } }
+
+/* ---------- Toolkit: category cards with real tool logos ---------- */
+.tk { margin-top: clamp(56px, 7vw, 110px); }
+.tk__top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px 40px; flex-wrap: wrap; margin-bottom: 26px; }
+.tk__top .exp__label { margin-bottom: 0; }
+.tk__lead { color: var(--mute); font-size: 15px; max-width: 440px; }
+.tk__cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.tk__card {
+  display: flex; flex-direction: column; gap: 20px; padding: 22px; border-radius: 22px;
+  border: 1px solid var(--line); background: color-mix(in srgb, var(--bone) 3%, transparent);
+  transition: border-color .4s, translate .5s var(--ease);
+}
+@media (hover: hover) { .tk__card:hover { border-color: var(--line-2); translate: 0 -4px; } }
+.tk__head { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
+.tk__icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; color: #fff;
+  background: linear-gradient(150deg, #8ea2ff, #4d6bff 55%, #2a3fb8); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4), 0 6px 14px -6px rgba(42, 63, 184, .7); }
+.tk__icon .i { width: 20px; height: 20px; stroke-width: 2; }
+.tk__title { font-size: 17px; font-weight: 700; letter-spacing: -.01em; line-height: 1.2; }
+.tk__sub { font-size: 13px; color: var(--mute); margin-top: 2px; }
+.tk__count { align-self: start; font-size: 12px; font-weight: 600; color: var(--mute); padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); }
+.tk__grid { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 6px 10px; }
+.tk__item { display: flex; align-items: center; gap: 10px; padding: 7px; border-radius: 12px; transition: background .3s; }
+@media (hover: hover) { .tk__item:hover { background: color-mix(in srgb, var(--bone) 6%, transparent); } }
+.tk__logo { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px;
+  background: #fff; border: 1px solid rgba(0, 0, 0, .06); box-shadow: 0 1px 0 rgba(0, 0, 0, .04), 0 6px 12px -8px rgba(0, 0, 0, .35); }
+.tk__logo svg { width: 19px; height: 19px; }
+.tk__lu { width: 19px; height: 19px; color: #4d6bff; stroke-width: 2; }
+.tk__name { font-size: 14.5px; font-weight: 500; line-height: 1.25; color: var(--bone); white-space: nowrap; }
+@media (max-width: 900px) { .tk__cards { grid-template-columns: 1fr; } }
+@media (max-width: 640px) {
+  .tk__card { padding: 18px; }
+  .tk__grid { grid-template-columns: 1fr 1fr; }
+  .tk__name { font-size: 14px; }
+}
