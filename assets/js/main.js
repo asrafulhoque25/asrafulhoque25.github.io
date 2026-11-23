@@ -313,14 +313,14 @@
 
   /* ---------- background gradient that travels with the scroll ---------- */
   var bgTl = gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: body, start: 'top top', end: 'bottom bottom', scrub: 1.5 } });
-  bgTl.to('.bgfx__b--1', { x: '-55vw', y: '50vh', '--c': 'rgba(255,170,60,.16)', duration: 1 })
-      .to('.bgfx__b--2', { x: '60vw', y: '-40vh', '--c': 'rgba(32,150,130,.10)', duration: 1 }, 0)
+  bgTl.to('.bgfx__b--1', { x: '-55vw', y: '50vh', '--c': 'rgba(90,170,255,.12)', duration: 1 })
+      .to('.bgfx__b--2', { x: '60vw', y: '-40vh', '--c': 'rgba(40,150,170,.10)', duration: 1 }, 0)
       .to('.bgfx__b--3', { x: '-30vw', scale: 1.3, duration: 1 }, 0)
-      .to('.bgfx__b--1', { x: '-20vw', y: '90vh', '--c': 'rgba(255,61,127,.12)', duration: 1 })
-      .to('.bgfx__b--2', { x: '20vw', y: '-80vh', '--c': 'rgba(255,90,31,.14)', duration: 1 }, '<')
+      .to('.bgfx__b--1', { x: '-20vw', y: '90vh', '--c': 'rgba(130,100,255,.12)', duration: 1 })
+      .to('.bgfx__b--2', { x: '20vw', y: '-80vh', '--c': 'rgba(77,107,255,.14)', duration: 1 }, '<')
       .to('.bgfx__b--3', { x: '10vw', y: '-20vh', scale: .9, duration: 1 }, '<')
-      .to('.bgfx__b--1', { x: '-60vw', y: '110vh', '--c': 'rgba(255,90,31,.22)', duration: 1 })
-      .to('.bgfx__b--2', { x: '70vw', y: '-60vh', '--c': 'rgba(201,52,24,.18)', duration: 1 }, '<');
+      .to('.bgfx__b--1', { x: '-60vw', y: '110vh', '--c': 'rgba(77,107,255,.20)', duration: 1 })
+      .to('.bgfx__b--2', { x: '70vw', y: '-60vh', '--c': 'rgba(40,70,190,.18)', duration: 1 }, '<');
 
   /* ---------- hero scroll parallax ----------
      The stage is pinned while: the portrait rises, the name lifts and its
@@ -467,16 +467,30 @@
   if (preview && finePointer) {
     var pimg = $('img', preview);
     var plist = $('.plist');
-    var px = gsap.quickTo(preview, 'x', { duration: .6, ease: 'power3' });
-    var py = gsap.quickTo(preview, 'y', { duration: .6, ease: 'power3' });
+    var px = gsap.quickTo(preview, 'x', { duration: .45, ease: 'power3' });
+    var py = gsap.quickTo(preview, 'y', { duration: .45, ease: 'power3' });
     var mx = -999, my = -999, lastRot = 0, shown = false, curRow = null;
+
+    // Load every preview image in the background once the page is idle,
+    // so hovering a row shows its picture instantly instead of downloading it first.
+    var cache = {};
+    function warm() {
+      $$('.prow').forEach(function (r) {
+        var src = r.dataset.img;
+        if (!src || cache[src]) return;
+        var im = new Image(); im.decoding = 'async'; im.src = src; cache[src] = im;
+        if (im.decode) im.decode().catch(function () {});
+      });
+    }
+    if ('requestIdleCallback' in window) requestIdleCallback(warm, { timeout: 3000 }); else setTimeout(warm, 1500);
+    if (plist) plist.addEventListener('mouseenter', warm, { once: true });
 
     function showFor(row) {
       var src = row && row.dataset.img;
       if (!src) { hidePreview(); return; }
       curRow = row;
       if (pimg.getAttribute('src') !== src) pimg.src = src;
-      if (!shown) { shown = true; gsap.to(preview, { opacity: 1, scale: 1, duration: .5, ease: 'expo.out', overwrite: 'auto' }); }
+      if (!shown) { shown = true; gsap.to(preview, { opacity: 1, scale: 1, duration: .35, ease: 'expo.out', overwrite: 'auto' }); }
     }
     function hidePreview() {
       curRow = null;
@@ -486,10 +500,19 @@
     }
     // Re-check what is under the pointer. Runs on mouse move AND on scroll,
     // so the preview never stays stuck when the list scrolls away.
+    // Find the row under the pointer by its box, not by hit-testing, so it
+    // still works while hover is paused during scrolling.
+    function rowAt(x, y) {
+      var rows = $$('.prow:not(.is-hidden)');
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i].getBoundingClientRect();
+        if (y >= r.top && y < r.bottom && x >= r.left && x <= r.right) return rows[i];
+      }
+      return null;
+    }
     function check() {
-      var el = document.elementFromPoint(mx, my);
-      var row = el && el.closest ? el.closest('.prow') : null;
-      if (row && !row.classList.contains('is-hidden')) { if (row !== curRow || !shown) showFor(row); }
+      var row = rowAt(mx, my);
+      if (row) { if (row !== curRow || !shown) showFor(row); }
       else hidePreview();
     }
     window.addEventListener('mousemove', function (e) {
@@ -500,7 +523,7 @@
       if (Math.abs(rot - lastRot) > .5) { gsap.to(preview, { rotation: rot, duration: .5 }); lastRot = rot; }
       check();
     }, { passive: true });
-    window.addEventListener('scroll', function () { if (shown || (plist && plist.matches(':hover'))) check(); }, { passive: true });
+    window.addEventListener('scroll', function () { if (mx > -999) check(); }, { passive: true });
     if (plist) plist.addEventListener('mouseleave', hidePreview);
     document.addEventListener('mouseleave', hidePreview);
     window.addEventListener('blur', hidePreview);
