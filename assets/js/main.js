@@ -375,8 +375,21 @@
   });
 
   /* ---------- generic reveals ---------- */
+  // Phones get a plain fade (no sliding) so nothing overlaps while scrolling
+  var small = window.matchMedia('(max-width: 900px)').matches;
   $$('[data-reveal]').forEach(function (el) {
-    whenVisible(el, function (d) { gsap.to(el, { opacity: 1, y: 0, delay: d, duration: .8, ease: 'expo.out', clearProps: 'transform' }); }, .94);
+    whenVisible(el, function (d) {
+      if (small) gsap.to(el, { opacity: 1, delay: d * .5, duration: .5, ease: 'power1.out' });
+      else gsap.to(el, { opacity: 1, y: 0, delay: d, duration: .8, ease: 'expo.out', clearProps: 'transform' });
+    }, small ? 1.2 : .94);
+  });
+
+  /* ---------- handwritten notes: a small pop when they come into view ---------- */
+  $$('.hand-note .tag-hand').forEach(function (n) {
+    gsap.set(n, small ? { opacity: 0 } : { opacity: 0, scale: .6 });
+    whenVisible(n, function () {
+      gsap.to(n, small ? { opacity: 1, duration: .5 } : { opacity: 1, scale: 1, duration: .7, ease: 'back.out(2.2)', clearProps: 'transform' });
+    }, .92);
   });
   $$('.eyebrow').forEach(function (e) {
     if (e.closest('.hero')) return;
