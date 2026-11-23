@@ -1006,11 +1006,11 @@ html.is-scrolling body { pointer-events: none; }
 @property --cx { syntax: "<percentage>"; inherits: true; initial-value: 50%; }
 @property --cy { syntax: "<percentage>"; inherits: true; initial-value: 10%; }
 .sr-filter { position: absolute; width: 0; height: 0; overflow: hidden; }
-.footer__big { justify-content: center; gap: .22em; --spot: 0; cursor: default; }
+.footer__big { justify-content: space-between; gap: .2em; --spot: 0; cursor: default; }
 .footer__big > span { --mx: 50%; --my: 50%; }
 .footer__big .fl {
   display: inline-block; vertical-align: top; line-height: 1.12; padding-bottom: .04em;
-  translate: 0 var(--wy, 0em); scale: 1 var(--ws, 1); transform-origin: 50% 90%; will-change: translate, scale;
+  translate: 0 calc(var(--wy, 0em) + var(--dy, 0em)); scale: 1 var(--ws, 1); opacity: var(--do, 1); transform-origin: 50% 90%; will-change: translate, scale;
   background-size: var(--ww, 100%) var(--wh, 100%) !important; background-position: calc(var(--lx, 0px) * -1) calc(var(--ly, 0px) * -1) !important; background-repeat: no-repeat;
   color: transparent; -webkit-text-fill-color: transparent;
   background:
