@@ -528,7 +528,7 @@ html:not(.anim) .gallery__row[data-dir="-1"] { animation-direction: reverse; }
 .footer__nav a:hover { color: var(--bone); }
 
 /* ---------- animation initial states (only when GSAP runs) ---------- */
-.anim [data-reveal] { opacity: 0; transform: translateY(28px); }
+.anim [data-reveal] { opacity: 0; transform: translateY(24px); }
 @media (max-width: 900px) { .anim [data-reveal] { transform: none; } }
 
 /* ---------- responsive ---------- */
