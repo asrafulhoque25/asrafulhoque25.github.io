@@ -345,23 +345,22 @@
     // Tiles float up out of their cluster as you scroll, each on its own path.
     // The "random" values are seeded, so every visit moves the same way.
     function seeded(n) { var x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
-    // Each tile travels far enough to leave the top of the screen, and fades out
-    // on the way, so none is left behind once the hero text has gone.
-    $$('.ptile').forEach(function (el, i) {
+    // Tiles leave one after another with clear gaps: the first starts right away,
+    // each next one a little later, and every tile flies past the top of the screen
+    // and fades out before the hero is gone. The fade sits on the inner face, so it
+    // never clashes with the page-load fade-in on the tile itself.
+    var tiles = $$('.ptile'), n = tiles.length, gap = .07, dur = 1 - gap * (n - 1);
+    tiles.forEach(function (el, i) {
       var a = seeded(i + 1), b = seeded(i + 21), c = seeded(i + 41);
       var r = el.getBoundingClientRect();
-      var rise = (r.top - sr.top) + r.height + 120 + b * 280;
+      var rise = (r.top - sr.top) + r.height + 140 + b * 220;
       var rot = gsap.getProperty(el, 'rotation');
-      var start = c * .18, dur = 1 - start;
+      var start = i * gap;
       tl.fromTo(el, { x: 0, y: 0, rotation: rot, scale: 1 }, {
-        x: (a - .5) * 240,
-        y: -rise,
-        rotation: rot + (c - .5) * 90,
-        scale: .85 + a * .35,
-        duration: dur,
-        ease: 'power1.in'
+        x: (a - .5) * 220, y: -rise, rotation: rot + (c - .5) * 80, scale: .85 + a * .3,
+        duration: dur, ease: 'power2.in'
       }, start);
-      tl.fromTo(el, { opacity: 1 }, { opacity: 0, duration: dur * .35, ease: 'none', immediateRender: false }, start + dur * .65);
+      tl.fromTo($('.ptile__face', el), { opacity: 1 }, { opacity: 0, duration: dur * .4, ease: 'none' }, start + dur * .6);
     });
     ScrollTrigger.refresh();
     return tl;
@@ -370,7 +369,7 @@
     var tl = heroParallax();
     return function () {
       if (tl) { tl.scrollTrigger && tl.scrollTrigger.kill(true); tl.kill(); }
-      gsap.set(['.px__portrait', '.px__title', '.px__echo', '.ptile', '.px__bar', '.hero__glow'], { clearProps: 'transform,opacity,x,y,scale,rotation,yPercent' });
+      gsap.set(['.px__portrait', '.px__title', '.px__echo', '.ptile', '.ptile__face', '.px__bar', '.hero__glow'], { clearProps: 'transform,opacity,x,y,scale,rotation,yPercent' });
       gsap.set('.ptile', { opacity: 1 });
     };
   });
@@ -471,48 +470,80 @@
   window.addEventListener('resize', queueFrame);
   onFrame();
 
-  /* ---------- footer name: aurora runs while visible, liquid ripple follows the pointer ---------- */
+  /* ---------- footer name: aurora gradient + liquid letter wave ---------- */
   (function () {
     var big = $('.footer__big');
     if (!big) return;
-    var spans = $$('span', big);
-    var disp = document.querySelector('#liquid feDisplacementMap');
-    var turb = document.querySelector('#liquid feTurbulence');
+    var words = $$(':scope > span', big);
+    // One span per letter; each letter paints its slice of the word's gradient
+    words.forEach(function (w) {
+      var txt = w.textContent; w.textContent = '';
+      txt.split('').forEach(function (ch) { var l = document.createElement('span'); l.className = 'fl'; l.textContent = ch; w.appendChild(l); });
+    });
+    var letters = $$('.fl', big), centers = [];
+    function measure() {
+      var br = big.getBoundingClientRect();
+      words.forEach(function (w) {
+        w.style.setProperty('--ww', w.offsetWidth + 'px'); w.style.setProperty('--wh', w.offsetHeight + 'px');
+        $$('.fl', w).forEach(function (l) { l.style.setProperty('--lx', l.offsetLeft + 'px'); l.style.setProperty('--ly', l.offsetTop + 'px'); });
+      });
+      centers = letters.map(function (l) { var r = l.getBoundingClientRect(); return r.left - br.left + r.width / 2; });
+    }
+    measure();
+    window.addEventListener('resize', measure);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(function (es) { big.classList.toggle('is-live', es[0].isIntersecting); }).observe(big);
     } else big.classList.add('is-live');
-    if (reduce || !disp) return;
+    if (reduce) return;
 
-    var liquid = { s: 0 }, spot = { v: 0 }, t0 = performance.now();
-    function applyLiquid() {
+    // Liquid: a slow travelling wave across the letters, plus a soft swell under the pointer.
+    // Everything eases toward its target each frame, so it never jumps or shakes.
+    var amp = 0, ampT = 0, px = -9999, pxS = -9999, running = false, t0 = performance.now(), spot = { v: 0 };
+    function tick() {
       var t = (performance.now() - t0) / 1000;
-      disp.setAttribute('scale', liquid.s.toFixed(2));
-      turb.setAttribute('baseFrequency', (0.004 + Math.sin(t * .8) * .001).toFixed(4) + ' ' + (0.014 + Math.cos(t * .6) * .003).toFixed(4));
-      big.classList.toggle('is-liquid', liquid.s > .3);
-    }
-    function ripple(strength) {
-      gsap.to(liquid, { s: Math.max(liquid.s, strength), duration: .25, ease: 'power2.out', overwrite: true, onUpdate: applyLiquid,
-        onComplete: function () { gsap.to(liquid, { s: 0, duration: 1.4, ease: 'power2.out', onUpdate: applyLiquid }); } });
-    }
-    var lx = 0, ly = 0, lt = 0;
-    big.addEventListener('pointermove', function (e) {
-      spans.forEach(function (sp) {
-        var r = sp.getBoundingClientRect();
-        sp.style.setProperty('--mx', (e.clientX - r.left) + 'px');
-        sp.style.setProperty('--my', (e.clientY - r.top) + 'px');
+      amp += (ampT - amp) * .05;
+      pxS += (px - pxS) * .12;
+      var bw = big.offsetWidth || 1;
+      letters.forEach(function (l, i) {
+        var d = (centers[i] - pxS) / (bw * .09);
+        var swell = Math.exp(-d * d);
+        var wave = Math.sin(t * 2.1 - i * .55);
+        var y = -(wave * .028 + swell * .07) * amp;
+        var sc = 1 + (Math.sin(t * 2.1 - i * .55 + 1.2) * .025 + swell * .06) * amp;
+        l.style.setProperty('--wy', y.toFixed(4) + 'em');
+        l.style.setProperty('--ws', sc.toFixed(4));
       });
-      var now = performance.now(), dt = Math.max(16, now - lt);
-      var speed = Math.hypot(e.clientX - lx, e.clientY - ly) / dt;
-      lx = e.clientX; ly = e.clientY; lt = now;
-      if (speed > .15) ripple(Math.min(22, speed * 12));
+      if (ampT === 0 && amp < .004) {
+        letters.forEach(function (l) { l.style.removeProperty('--wy'); l.style.removeProperty('--ws'); });
+        running = false; gsap.ticker.remove(tick);
+      }
+    }
+    function start() { if (!running) { running = true; gsap.ticker.add(tick); } }
+    big.addEventListener('pointermove', function (e) {
+      var br = big.getBoundingClientRect();
+      px = e.clientX - br.left;
+      if (pxS < -9000) pxS = px;
+      words.forEach(function (w) {
+        var r = w.getBoundingClientRect();
+        w.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+        w.style.setProperty('--my', (e.clientY - r.top) + 'px');
+      });
     });
-    big.addEventListener('pointerenter', function () {
+    big.addEventListener('pointerenter', function (e) {
+      ampT = 1; start();
       gsap.to(spot, { v: 1, duration: .5, onUpdate: function () { big.style.setProperty('--spot', spot.v.toFixed(3)); } });
     });
     big.addEventListener('pointerleave', function () {
+      ampT = 0; px = -9999;
       gsap.to(spot, { v: 0, duration: .6, onUpdate: function () { big.style.setProperty('--spot', spot.v.toFixed(3)); } });
     });
-    big.addEventListener('pointerdown', function () { ripple(18); });
+    // Touch: a tap sends one wave through the name
+    big.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse') return;
+      ampT = 1; start(); setTimeout(function () { ampT = 0; }, 1800);
+    });
   })();
 
   /* ---------- counters ---------- */
@@ -660,8 +691,8 @@
   whenVisible($('.gallery__rows'), function () { gsap.to('.gallery__rows', { opacity: 1, y: 0, duration: 1.3, ease: 'power3.out' }); }, .98);
 
   /* ---------- footer big name ---------- */
-  gsap.set('.footer__big span', { yPercent: 100 });
-  whenVisible($('.footer__big'), function () { gsap.to('.footer__big span', { yPercent: 0, duration: 1.4, stagger: .12, ease: 'power3.out' }); }, 1);
+  gsap.set('.footer__big > span', { yPercent: 100 });
+  whenVisible($('.footer__big'), function () { gsap.to('.footer__big > span', { yPercent: 0, duration: 1.4, stagger: .12, ease: 'power3.out' }); }, 1);
 
   /* ---------- contact photo reveal ---------- */
   gsap.set('.contact__photo', { clipPath: 'inset(100% 0 0 0)' });

@@ -539,8 +539,8 @@ html:not(.anim) .gallery__row[data-dir="-1"] { animation-direction: reverse; }
 .footer__up { width: 64px; height: 64px; border-radius: 50%; border: 1px solid var(--line-2); font-size: 22px; transition: background .3s, color .3s; }
 .footer__up:hover { background: var(--accent); color: var(--ink); border-color: var(--accent); }
 .footer__big { display: flex; justify-content: space-between; gap: .12em; margin: 50px 0 30px; font-size: clamp(40px, 12.6vw, 240px); font-weight: 800; letter-spacing: -.07em; line-height: .8; color: var(--bone); overflow: hidden; }
-.footer__big span { display: block; padding-bottom: .06em; }
-.footer__big span:last-child { font-family: var(--f-serif); font-style: italic; font-weight: 400; color: var(--accent); letter-spacing: -.04em; }
+.footer__big > span { position: relative; display: block; white-space: nowrap; }
+
 .footer__bottom { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; font-size: 13px; color: var(--mute); padding-top: 20px; border-top: 1px solid var(--line); }
 .footer__nav { display: flex; gap: 20px; flex-wrap: wrap; }
 .footer__nav a:hover { color: var(--bone); }
@@ -867,7 +867,7 @@ html.is-scrolling body { pointer-events: none; }
 .marquee__item span:nth-child(4n+3) { font-family: inherit; font-style: normal; font-weight: 400; color: var(--accent); }
 .marquee__item b { display: inline-flex; }
 .footer__big { font-size: clamp(56px, 13.6vw, 300px); letter-spacing: .005em; line-height: .86; justify-content: space-between; overflow: visible; }
-.footer__big span:last-child { font-family: inherit; font-style: normal; color: var(--accent); letter-spacing: inherit; }
+
 .about__statement { letter-spacing: -.03em; font-weight: 600; }
 .tl__org, .tools__name { font-family: var(--f-display); font-style: normal; font-weight: 600; font-size: 17px; letter-spacing: -.01em; color: var(--bone-2); }
 .tools__name { font-size: 15px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
@@ -1006,8 +1006,12 @@ html.is-scrolling body { pointer-events: none; }
 @property --cx { syntax: "<percentage>"; inherits: true; initial-value: 50%; }
 @property --cy { syntax: "<percentage>"; inherits: true; initial-value: 10%; }
 .sr-filter { position: absolute; width: 0; height: 0; overflow: hidden; }
-.footer__big { justify-content: center; gap: .22em; --mx: 50%; --my: 50%; --spot: 0; cursor: default; }
-.footer__big span, .footer__big span:last-child {
+.footer__big { justify-content: center; gap: .22em; --spot: 0; cursor: default; }
+.footer__big > span { --mx: 50%; --my: 50%; }
+.footer__big .fl {
+  display: inline-block; vertical-align: top; line-height: 1.12; padding-bottom: .04em;
+  translate: 0 var(--wy, 0em); scale: 1 var(--ws, 1); transform-origin: 50% 90%; will-change: translate, scale;
+  background-size: var(--ww, 100%) var(--wh, 100%) !important; background-position: calc(var(--lx, 0px) * -1) calc(var(--ly, 0px) * -1) !important; background-repeat: no-repeat;
   color: transparent; -webkit-text-fill-color: transparent;
   background:
     radial-gradient(circle at var(--mx) var(--my), rgba(255, 255, 255, calc(var(--spot) * .95)) 0, transparent 18%),
@@ -1017,14 +1021,13 @@ html.is-scrolling body { pointer-events: none; }
     linear-gradient(115deg, #1e2f9e 0%, #4d6bff 35%, #6f86ff 55%, #2a3fb8 80%, #4d6bff 100%);
   -webkit-background-clip: text; background-clip: text;
 }
-.footer__big span:last-child { --ax: 70%; --bx: 20%; --cx: 40%; }
-.footer__big.is-live span { animation: aurora 14s ease-in-out infinite alternate; }
-.footer__big.is-live span:last-child { animation-duration: 17s; animation-direction: alternate-reverse; }
+.footer__big > span:last-child { --ax: 70%; --bx: 20%; --cx: 40%; }
+.footer__big.is-live > span { animation: aurora 14s ease-in-out infinite alternate; }
+.footer__big.is-live > span:last-child { animation-duration: 17s; animation-direction: alternate-reverse; }
 @keyframes aurora {
   0%   { --ax: 15%; --ay: 25%; --bx: 80%; --by: 75%; --cx: 50%; --cy: 5%; }
   33%  { --ax: 55%; --ay: 80%; --bx: 30%; --by: 20%; --cx: 85%; --cy: 60%; }
   66%  { --ax: 85%; --ay: 30%; --bx: 60%; --by: 90%; --cx: 15%; --cy: 40%; }
   100% { --ax: 35%; --ay: 60%; --bx: 10%; --by: 35%; --cx: 70%; --cy: 95%; }
 }
-.footer__big.is-liquid { filter: url(#liquid); }
-@media (prefers-reduced-motion: reduce) { .footer__big.is-live span { animation: none; } .footer__big.is-liquid { filter: none; } }
+@media (prefers-reduced-motion: reduce) { .footer__big.is-live > span { animation: none; } }
