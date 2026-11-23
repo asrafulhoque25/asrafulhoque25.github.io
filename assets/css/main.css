@@ -761,8 +761,7 @@ html:not(.anim) .gallery__row[data-dir="-1"] { animation-direction: reverse; }
   .isyou__inner { grid-template-columns: 1fr; }
   .note::before { left: 62px; }
   .note__x { width: 30px; height: 30px; }
-  .toss { min-height: 860px; }
-  .pill { font-size: 14px; padding: .6em 1.05em; }
+  .pill { font-size: 14px; padding: .55em 1em; }
   .note__list li { gap: 26px; padding-left: 14px; }
 }
 
@@ -775,6 +774,7 @@ html:not(.anim) .gallery__row[data-dir="-1"] { animation-direction: reverse; }
   background: radial-gradient(120% 90% at 100% 0%, #ff8a5c 0%, #ff5a1f 42%, #c9341a 100%);
   color: var(--ink); text-align: center;
 }
+@media (max-width: 900px) { .toss { min-height: 960px; } }
 .toss__head { position: relative; z-index: 2; max-width: 860px; margin: 0 auto; pointer-events: none; }
 .toss__head .tag-hand { pointer-events: auto; }
 .toss__title { font-family: "Anton", sans-serif; font-weight: 400; text-transform: uppercase; font-size: clamp(52px, 7.4vw, 130px); line-height: .92; letter-spacing: .005em; color: var(--ink); margin-bottom: 26px; }
@@ -792,6 +792,8 @@ html:not(.anim) .gallery__row[data-dir="-1"] { animation-direction: reverse; }
 /* Before physics starts (or without JS) the pills sit in a neat wrap at the bottom */
 .toss__pills:not(.is-live) { display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-end; gap: 10px; padding: 0 var(--gutter) 28px; position: relative; inset: auto; margin-top: 48px; }
 .toss__pills:not(.is-live) .pill { position: static; }
+/* Physics is about to start: keep pills hidden until they drop in */
+.toss__pills.is-pending .pill { visibility: hidden; }
 
 /* =========================================================
    Typography system: Inter (text, UI, labels) + Anton (headlines)
