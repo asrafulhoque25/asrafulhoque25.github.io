@@ -679,7 +679,8 @@ html.is-scrolling body { pointer-events: none; }
   .px__tiles {
     --sz: clamp(58px, 5.1vw, 92px); --gap: clamp(10px, 1.1vw, 20px);
     /* starts just below the giant name, whatever the screen size */
-    inset: auto; right: calc(var(--gutter) + 1vw); top: calc(10% + min(15.4vw, 300px) * .86 + 28px); z-index: 5;
+    inset: auto; right: calc(var(--gutter) + 1vw); z-index: 5;
+    top: max(calc(10% + min(15.4vw, 300px) * .86 + 28px), calc(100% - 150px - 3 * var(--sz) - 2 * var(--gap)));
     display: grid; grid-template-columns: repeat(8, calc((var(--sz) + var(--gap)) / 2)); grid-auto-rows: var(--sz); row-gap: var(--gap);
     list-style: none; margin: 0; padding: 0;
   }
@@ -713,6 +714,7 @@ html.is-scrolling body { pointer-events: none; }
 .px__intro .eyebrow { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .px__tagline { font-size: clamp(30px, 2.9vw, 50px); line-height: 1.08; letter-spacing: -.03em; font-weight: 500; color: var(--bone); }
 .px__tagline .serif { color: var(--accent); font-size: 1.1em; }
+.px__tagline .tg-line { display: block; white-space: nowrap; }
 .px__actions { display: flex; flex-direction: column; align-items: flex-end; gap: 14px; }
 .hero--px .hero__cta { display: flex; align-items: center; gap: 20px; }
 .hero__link { font-size: 15px; color: var(--bone-2); border-bottom: 1px solid var(--line-2); padding-bottom: 2px; transition: color .3s, border-color .3s; }
@@ -922,8 +924,8 @@ html.is-scrolling body { pointer-events: none; }
 
 /* Short laptop screens: keep the lowest tile clear of the tagline */
 @media (min-width: 901px) and (max-height: 820px) {
-  .px__tiles { top: calc(92px + min(15.4vw, 27vh) * .86 + 18px); --sz: clamp(50px, 4.4vw, 76px); --gap: clamp(8px, .9vw, 14px); }
-  .px__note { top: 62%; }
+  .px__tiles { top: max(calc(92px + min(15.4vw, 27vh) * .86 + 18px), calc(100% - 140px - 3 * var(--sz) - 2 * var(--gap))); --sz: clamp(50px, 4.4vw, 76px); --gap: clamp(8px, .9vw, 14px); }
+  .px__note { top: 56%; }
   /* Keep the giant name clear of the nav on short laptop screens */
   .px__title, .px__echo { top: 92px; font-size: min(15.4vw, 27vh); }
 }
@@ -980,3 +982,49 @@ html.is-scrolling body { pointer-events: none; }
   .tk__grid { grid-template-columns: 1fr 1fr; }
   .tk__name { font-size: 14px; }
 }
+
+/* ---------- Card hover: a light beam that runs around the border ---------- */
+@property --beam { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.svc, .tk__card, .plan { position: relative; }
+.svc::after, .tk__card::after, .plan::after {
+  content: ""; position: absolute; inset: -1px; z-index: 3; border-radius: inherit; padding: 2px; pointer-events: none;
+  background: conic-gradient(from var(--beam), transparent 0 52%, rgba(77, 107, 255, .25) 64%, #4d6bff 80%, #8ea2ff 91%, #ffffff 97%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite: exclude;
+  opacity: 0; transition: opacity .45s ease;
+}
+.svc:hover::after, .tk__card:hover::after, .plan:hover::after { opacity: 1; animation: beam-run 2.8s linear infinite; }
+.svc:hover, .tk__card:hover, .plan:hover { box-shadow: 0 0 0 1px rgba(77, 107, 255, .18), 0 24px 60px -28px rgba(77, 107, 255, .6); }
+@keyframes beam-run { to { --beam: 360deg; } }
+@media (prefers-reduced-motion: reduce) { .svc:hover::after, .tk__card:hover::after, .plan:hover::after { animation: none; } }
+
+/* ---------- Footer name: liquid aurora gradient ---------- */
+@property --ax { syntax: "<percentage>"; inherits: true; initial-value: 20%; }
+@property --ay { syntax: "<percentage>"; inherits: true; initial-value: 30%; }
+@property --bx { syntax: "<percentage>"; inherits: true; initial-value: 75%; }
+@property --by { syntax: "<percentage>"; inherits: true; initial-value: 70%; }
+@property --cx { syntax: "<percentage>"; inherits: true; initial-value: 50%; }
+@property --cy { syntax: "<percentage>"; inherits: true; initial-value: 10%; }
+.sr-filter { position: absolute; width: 0; height: 0; overflow: hidden; }
+.footer__big { justify-content: center; gap: .22em; --mx: 50%; --my: 50%; --spot: 0; cursor: default; }
+.footer__big span, .footer__big span:last-child {
+  color: transparent; -webkit-text-fill-color: transparent;
+  background:
+    radial-gradient(circle at var(--mx) var(--my), rgba(255, 255, 255, calc(var(--spot) * .95)) 0, transparent 18%),
+    radial-gradient(60% 90% at var(--ax) var(--ay), #8ea2ff 0, transparent 60%),
+    radial-gradient(55% 80% at var(--bx) var(--by), #a78bfa 0, transparent 60%),
+    radial-gradient(50% 70% at var(--cx) var(--cy), #67e8f9 0, transparent 55%),
+    linear-gradient(115deg, #1e2f9e 0%, #4d6bff 35%, #6f86ff 55%, #2a3fb8 80%, #4d6bff 100%);
+  -webkit-background-clip: text; background-clip: text;
+}
+.footer__big span:last-child { --ax: 70%; --bx: 20%; --cx: 40%; }
+.footer__big.is-live span { animation: aurora 14s ease-in-out infinite alternate; }
+.footer__big.is-live span:last-child { animation-duration: 17s; animation-direction: alternate-reverse; }
+@keyframes aurora {
+  0%   { --ax: 15%; --ay: 25%; --bx: 80%; --by: 75%; --cx: 50%; --cy: 5%; }
+  33%  { --ax: 55%; --ay: 80%; --bx: 30%; --by: 20%; --cx: 85%; --cy: 60%; }
+  66%  { --ax: 85%; --ay: 30%; --bx: 60%; --by: 90%; --cx: 15%; --cy: 40%; }
+  100% { --ax: 35%; --ay: 60%; --bx: 10%; --by: 35%; --cx: 70%; --cy: 95%; }
+}
+.footer__big.is-liquid { filter: url(#liquid); }
+@media (prefers-reduced-motion: reduce) { .footer__big.is-live span { animation: none; } .footer__big.is-liquid { filter: none; } }
