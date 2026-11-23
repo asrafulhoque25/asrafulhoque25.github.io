@@ -371,7 +371,7 @@
   $$('.title, .contact__title').forEach(function (t) {
     var cs = $$('.c', t);
     gsap.set(cs, { yPercent: 115 });
-    whenVisible(t, function () { gsap.to(cs, { yPercent: 0, duration: .9, stagger: .018, ease: 'expo.out' }); }, .95);
+    whenVisible(t, function () { gsap.to(cs, { yPercent: 0, duration: 1.2, stagger: .025, ease: 'power3.out' }); }, .92);
   });
 
   /* ---------- generic reveals ---------- */
@@ -379,22 +379,22 @@
   var small = window.matchMedia('(max-width: 900px)').matches;
   $$('[data-reveal]').forEach(function (el) {
     whenVisible(el, function (d) {
-      if (small) gsap.to(el, { opacity: 1, delay: d * .5, duration: .5, ease: 'power1.out' });
-      else gsap.to(el, { opacity: 1, y: 0, delay: d, duration: .8, ease: 'expo.out', clearProps: 'transform' });
-    }, small ? 1.2 : .94);
+      if (small) gsap.to(el, { opacity: 1, duration: .9, ease: 'sine.out' });
+      else gsap.to(el, { opacity: 1, y: 0, delay: d * 1.5, duration: 1.3, ease: 'power3.out', clearProps: 'transform' });
+    }, small ? 1.05 : .9);
   });
 
   /* ---------- handwritten notes: a small pop when they come into view ---------- */
   $$('.hand-note .tag-hand').forEach(function (n) {
     gsap.set(n, small ? { opacity: 0 } : { opacity: 0, scale: .6 });
     whenVisible(n, function () {
-      gsap.to(n, small ? { opacity: 1, duration: .5 } : { opacity: 1, scale: 1, duration: .7, ease: 'back.out(2.2)', clearProps: 'transform' });
+      gsap.to(n, small ? { opacity: 1, duration: .9, delay: .2, ease: 'sine.out' } : { opacity: 1, scale: 1, duration: 1, delay: .2, ease: 'back.out(1.6)', clearProps: 'transform' });
     }, .92);
   });
   $$('.eyebrow').forEach(function (e) {
     if (e.closest('.hero')) return;
     gsap.set(e, { opacity: 0, x: -16 });
-    whenVisible(e, function () { gsap.to(e, { opacity: 1, x: 0, duration: .7, ease: 'expo.out' }); }, .96);
+    whenVisible(e, function () { gsap.to(e, { opacity: 1, x: 0, duration: 1, ease: 'power3.out' }); }, .94);
   });
 
   /* ---------- about statement: word scrub ---------- */
@@ -448,7 +448,7 @@
     });
     var fc = $$('.fcard', tr);
     gsap.set(fc, { y: 60, opacity: 0 });
-    whenVisible(pin, function () { gsap.to(fc, { y: 0, opacity: 1, stagger: .07, duration: .9, ease: 'expo.out' }); }, .8);
+    whenVisible(pin, function () { gsap.to(fc, { y: 0, opacity: 1, stagger: .1, duration: 1.3, ease: 'power3.out' }); }, .8);
     return function () { gsap.set(fc, { clearProps: 'all' }); };
   });
 
@@ -499,7 +499,7 @@
   }
   $$('.prow').forEach(function (r) {
     gsap.set(r, { y: 30, opacity: 0 });
-    whenVisible(r, function (d) { gsap.to(r, { y: 0, opacity: 1, delay: d, duration: .7, ease: 'expo.out', clearProps: 'transform,opacity' }); }, .96);
+    whenVisible(r, function (d) { gsap.to(r, { y: 0, opacity: 1, delay: d * 1.5, duration: 1.1, ease: 'power3.out', clearProps: 'transform,opacity' }); }, .94);
   });
 
   /* ---------- timeline line draw ---------- */
@@ -524,11 +524,11 @@
     }
   });
   gsap.set('.gallery__rows', { opacity: 0, y: 40 });
-  whenVisible($('.gallery__rows'), function () { gsap.to('.gallery__rows', { opacity: 1, y: 0, duration: .9, ease: 'expo.out' }); }, .98);
+  whenVisible($('.gallery__rows'), function () { gsap.to('.gallery__rows', { opacity: 1, y: 0, duration: 1.3, ease: 'power3.out' }); }, .98);
 
   /* ---------- footer big name ---------- */
   gsap.set('.footer__big span', { yPercent: 100 });
-  whenVisible($('.footer__big'), function () { gsap.to('.footer__big span', { yPercent: 0, duration: 1.1, stagger: .1, ease: 'expo.out' }); }, 1);
+  whenVisible($('.footer__big'), function () { gsap.to('.footer__big span', { yPercent: 0, duration: 1.4, stagger: .12, ease: 'power3.out' }); }, 1);
 
   /* ---------- contact photo reveal ---------- */
   gsap.set('.contact__photo', { clipPath: 'inset(100% 0 0 0)' });
