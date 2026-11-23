@@ -493,37 +493,53 @@
     window.addEventListener('resize', measure);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
 
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (es) { big.classList.toggle('is-live', es[0].isIntersecting); }).observe(big);
-    } else big.classList.add('is-live');
-    if (reduce) return;
+    if (reduce) {
+      if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { big.classList.toggle('is-live', es[0].isIntersecting); }).observe(big);
+      return;
+    }
 
-    // Liquid: a slow travelling wave across the letters, plus a soft swell under the pointer.
-    // Everything eases toward its target each frame, so it never jumps or shakes.
-    var amp = 0, ampT = 0, px = -9999, pxS = -9999, running = false, t0 = performance.now(), spot = { v: 0 };
+    // Every frame while the name is on screen:
+    //  - letters drop in from above one after another, tied to scroll (reverses on scroll up)
+    //  - a slow wave keeps the letters gently swaying, stronger on hover
+    //  - letters under the pointer swell like liquid
+    var amp = 0, hovered = false, px = -9999, pxS = -9999, running = false, t0 = performance.now(), spot = { v: 0 };
+    var n = letters.length, K = 3.5;
+    function easeOut(x) { return 1 - Math.pow(1 - x, 3); }
     function tick() {
       var t = (performance.now() - t0) / 1000;
-      amp += (ampT - amp) * .05;
+      amp += ((hovered ? 1 : .55) - amp) * .05;
       pxS += (px - pxS) * .12;
-      var bw = big.offsetWidth || 1;
+      var br = big.getBoundingClientRect(), vh = window.innerHeight, bw = br.width || 1;
+      // 0 when the name's top reaches the bottom of the screen, 1 once it has risen well into view
+      var P = Math.min(1, Math.max(0, (vh - br.top - 30) / (br.height * .95 + 60)));
       letters.forEach(function (l, i) {
+        var local = Math.min(1, Math.max(0, (P * (n + K) - i) / K));
+        var e = easeOut(local);
         var d = (centers[i] - pxS) / (bw * .09);
-        var swell = Math.exp(-d * d);
-        var wave = Math.sin(t * 2.1 - i * .55);
-        var y = -(wave * .028 + swell * .07) * amp;
-        var sc = 1 + (Math.sin(t * 2.1 - i * .55 + 1.2) * .025 + swell * .06) * amp;
+        var swell = hovered ? Math.exp(-d * d) : 0;
+        var ph = t * 1.5 - i * .5;
+        var y = -(Math.sin(ph) * .03 + swell * .07) * amp;
+        var sc = 1 + (Math.sin(ph + 1.2) * .022 + swell * .06) * amp;
         l.style.setProperty('--wy', y.toFixed(4) + 'em');
         l.style.setProperty('--ws', sc.toFixed(4));
+        l.style.setProperty('--dy', (-(1 - e) * .6).toFixed(4) + 'em');
+        l.style.setProperty('--do', Math.pow(local, 1.4).toFixed(3));
       });
-      if (ampT === 0 && amp < .004) {
-        letters.forEach(function (l) { l.style.removeProperty('--wy'); l.style.removeProperty('--ws'); });
-        running = false; gsap.ticker.remove(tick);
-      }
     }
     function start() { if (!running) { running = true; gsap.ticker.add(tick); } }
+    function stop() { if (running) { running = false; gsap.ticker.remove(tick); } }
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) {
+        var on = es[0].isIntersecting;
+        big.classList.toggle('is-live', on);
+        if (on) start(); else stop();
+      }, { rootMargin: '120px 0px' }).observe(big);
+    } else { big.classList.add('is-live'); start(); }
+    tick();
+
     big.addEventListener('pointermove', function (e) {
-      var br = big.getBoundingClientRect();
-      px = e.clientX - br.left;
+      var r0 = big.getBoundingClientRect();
+      px = e.clientX - r0.left;
       if (pxS < -9000) pxS = px;
       words.forEach(function (w) {
         var r = w.getBoundingClientRect();
@@ -531,18 +547,13 @@
         w.style.setProperty('--my', (e.clientY - r.top) + 'px');
       });
     });
-    big.addEventListener('pointerenter', function (e) {
-      ampT = 1; start();
+    big.addEventListener('pointerenter', function () {
+      hovered = true;
       gsap.to(spot, { v: 1, duration: .5, onUpdate: function () { big.style.setProperty('--spot', spot.v.toFixed(3)); } });
     });
     big.addEventListener('pointerleave', function () {
-      ampT = 0; px = -9999;
+      hovered = false; px = -9999; pxS = -9999;
       gsap.to(spot, { v: 0, duration: .6, onUpdate: function () { big.style.setProperty('--spot', spot.v.toFixed(3)); } });
-    });
-    // Touch: a tap sends one wave through the name
-    big.addEventListener('pointerdown', function (e) {
-      if (e.pointerType === 'mouse') return;
-      ampT = 1; start(); setTimeout(function () { ampT = 0; }, 1800);
     });
   })();
 
@@ -691,8 +702,7 @@
   whenVisible($('.gallery__rows'), function () { gsap.to('.gallery__rows', { opacity: 1, y: 0, duration: 1.3, ease: 'power3.out' }); }, .98);
 
   /* ---------- footer big name ---------- */
-  gsap.set('.footer__big > span', { yPercent: 100 });
-  whenVisible($('.footer__big'), function () { gsap.to('.footer__big > span', { yPercent: 0, duration: 1.4, stagger: .12, ease: 'power3.out' }); }, 1);
+
 
   /* ---------- contact photo reveal ---------- */
   gsap.set('.contact__photo', { clipPath: 'inset(100% 0 0 0)' });
