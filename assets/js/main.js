@@ -342,13 +342,20 @@
     $$('.px__echo').forEach(function (el, i) {
       tl.fromTo(el, { yPercent: 0, opacity: 0 }, { yPercent: (i + 1) * 34, opacity: .9 - i * .25, duration: .8 }, .05 + i * .06);
     });
-    // Tiles keep their tidy layout: every tile drifts outward and up by the same amount
+    // Tiles float up out of their cluster as you scroll, each on its own path.
+    // The "random" values are seeded, so every visit moves the same way.
+    function seeded(n) { var x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
     $$('.ptile').forEach(function (el, i) {
-      var r = el.getBoundingClientRect();
-      var side = (r.left + r.width / 2) < cx ? -1 : 1;
+      var a = seeded(i + 1), b = seeded(i + 21), c = seeded(i + 41);
       var rot = gsap.getProperty(el, 'rotation');
-      tl.fromTo(el, { x: -side * 24, y: 26, scale: .94, rotation: rot * .5 },
-        { x: side * 56, y: -70 - (i % 3) * 10, scale: 1.06, rotation: rot * 1.4, duration: 1 }, 0);
+      tl.fromTo(el, { x: 0, y: 0, rotation: rot, scale: 1 }, {
+        x: (a - .5) * 220,
+        y: -(260 + b * 520),
+        rotation: rot + (c - .5) * 80,
+        scale: .85 + a * .35,
+        duration: .75 + b * .25,
+        ease: 'sine.in'
+      }, c * .2);
     });
     ScrollTrigger.refresh();
     return tl;
