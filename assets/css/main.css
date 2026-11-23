@@ -762,7 +762,7 @@ html:not(.anim) .gallery__row[data-dir="-1"] { animation-direction: reverse; }
   .note::before { left: 62px; }
   .note__x { width: 30px; height: 30px; }
   .toss { min-height: 860px; }
-  .pill { font-size: 15px; }
+  .pill { font-size: 14px; padding: .6em 1.05em; }
   .note__list li { gap: 26px; padding-left: 14px; }
 }
 

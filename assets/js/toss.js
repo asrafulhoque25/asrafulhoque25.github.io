@@ -15,16 +15,23 @@
     if (started) return;
     started = true;
 
-    // Measure each pill in its static layout before switching to physics
+    // Measure each pill where it already sits, so switching to physics moves nothing.
+    // The section keeps its exact height, so nothing below it jumps either.
     var pills = [].slice.call(wrap.querySelectorAll('.pill'));
-    var sizes = pills.map(function (el) { return { w: el.offsetWidth, h: el.offsetHeight }; });
+    var box = section.getBoundingClientRect();
+    var sizes = pills.map(function (el) {
+      var r = el.getBoundingClientRect();
+      return { w: r.width, h: r.height, x: r.left - box.left + r.width / 2, y: r.top - box.top + r.height / 2 };
+    });
+    var floor = Math.max.apply(null, sizes.map(function (s) { return s.y + s.h / 2; }));
+    section.style.height = section.offsetHeight + 'px';
     wrap.classList.add('is-live');
 
     var W = wrap.clientWidth, H = wrap.clientHeight;
-    var engine = M.Engine.create({ gravity: { y: 1.1 } });
+    var engine = M.Engine.create({ gravity: { y: 1.1 }, enableSleeping: true });
     var world = engine.world, T = 120;
     var walls = [
-      M.Bodies.rectangle(W / 2, H + T / 2, W * 3, T, { isStatic: true }),
+      M.Bodies.rectangle(W / 2, floor + T / 2, W * 3, T, { isStatic: true }),
       M.Bodies.rectangle(-T / 2, H / 2, T, H * 4, { isStatic: true }),
       M.Bodies.rectangle(W + T / 2, H / 2, T, H * 4, { isStatic: true }),
       M.Bodies.rectangle(W / 2, -H * 1.5, W * 3, T, { isStatic: true })
@@ -33,15 +40,16 @@
 
     var bodies = pills.map(function (el, i) {
       var s = sizes[i];
-      var b = M.Bodies.rectangle(W * (.15 + Math.random() * .7), -100 - i * 70, s.w, s.h, {
-        chamfer: { radius: s.h / 2 }, restitution: .35, friction: .3, frictionAir: .012, density: .002,
-        angle: (Math.random() - .5) * .8
+      var b = M.Bodies.rectangle(s.x, s.y, s.w, s.h, {
+        chamfer: { radius: s.h / 2 }, restitution: .3, friction: .5, frictionAir: .02, density: .002
       });
       b.el = el; b.w = s.w; b.h = s.h;
       return b;
     });
-    // Drop them in one after another
-    bodies.forEach(function (b, i) { setTimeout(function () { M.Composite.add(world, b); }, i * 90); });
+    // Pills start at rest exactly where they were; they only move when someone throws them
+    M.Composite.add(world, bodies);
+    // Asleep until touched: a throw (or a pill hitting them) wakes them up
+    bodies.forEach(function (b) { M.Sleeping.set(b, true); });
 
     // Drag and throw with pointer events (page scroll still works outside the pills)
     var drag = null, last = null;
@@ -49,6 +57,7 @@
     pills.forEach(function (el, i) {
       el.addEventListener('pointerdown', function (e) {
         var b = bodies[i], p = point(e);
+        M.Sleeping.set(b, false);
         el.setPointerCapture(e.pointerId); el.classList.add('is-dragging');
         drag = M.Constraint.create({ pointA: p, bodyB: b, pointB: { x: p.x - b.position.x, y: p.y - b.position.y }, stiffness: .2, damping: .1, length: 0 });
         M.Composite.add(world, drag); last = { p: p, t: performance.now() };
@@ -89,7 +98,7 @@
       clearTimeout(rt);
       rt = setTimeout(function () {
         var nW = wrap.clientWidth, nH = wrap.clientHeight;
-        M.Body.setPosition(walls[0], { x: nW / 2, y: nH + T / 2 });
+        M.Body.setPosition(walls[0], { x: nW / 2, y: Math.min(floor, nH) + T / 2 });
         M.Body.setPosition(walls[2], { x: nW + T / 2, y: nH / 2 });
         bodies.forEach(function (b) { if (b.position.x > nW - 20) M.Body.setPosition(b, { x: nW - b.w / 2 - 10, y: b.position.y }); });
         W = nW; H = nH;
