@@ -90,5 +90,3 @@
 .cta-band .btn--ink::before { background: var(--bone); }
 .cta-band .btn--ink:hover { color: var(--ink); }
 
-/* Simple footer for inner pages */
-.page .footer__big { font-size: clamp(36px, 10vw, 180px); }

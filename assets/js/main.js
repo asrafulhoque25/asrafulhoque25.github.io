@@ -345,30 +345,33 @@
     // Tiles float up out of their cluster as you scroll, each on its own path.
     // The "random" values are seeded, so every visit moves the same way.
     function seeded(n) { var x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
-    // Tiles rise together like bubbles: all start at once, the top row a little
-    // faster and the bottom row a little slower, each wobbling gently side to side.
-    // They all clear the top of the screen and fade out before the hero is gone.
+    // Tiles break out of the tidy cluster and scatter upward like bubbles:
+    // each starts a moment apart (all within a short window, so there are no big gaps),
+    // rises at its own speed and drifts outward from the cluster's centre,
+    // wobbling a little, then fades out as it clears the top of the screen.
     // The fade sits on the inner face so it never clashes with the page-load fade-in.
     var tiles = $$('.ptile');
-    var tops = tiles.map(function (el) { return el.getBoundingClientRect().top; });
-    var minTop = Math.min.apply(null, tops), maxTop = Math.max.apply(null, tops);
-    var lowest = maxTop - sr.top + tiles[0].offsetHeight;
+    var rects = tiles.map(function (el) { return el.getBoundingClientRect(); });
+    var midX = rects.reduce(function (s, r) { return s + r.left + r.width / 2; }, 0) / rects.length;
+    var span = Math.max.apply(null, rects.map(function (r) { return Math.abs(r.left + r.width / 2 - midX); })) || 1;
+    var lowest = Math.max.apply(null, rects.map(function (r) { return r.bottom; })) - sr.top;
     tiles.forEach(function (el, i) {
-      var a = seeded(i + 1), b = seeded(i + 21), c = seeded(i + 41);
-      var row = maxTop > minTop ? (tops[i] - minTop) / (maxTop - minTop) : 0;   // 0 = top row, 1 = bottom row
-      var dur = .86 + row * .14;                                               // top rows finish sooner = move faster
-      var rise = lowest + 160 + b * 60;
+      var a = seeded(i + 1), b = seeded(i + 21), c = seeded(i + 41), d = seeded(i + 61);
+      var r = rects[i];
+      var side = (r.left + r.width / 2 - midX) / span;             // -1 left edge … 1 right edge
+      var start = a * .16;                                          // small, uneven head starts
+      var dur = Math.min(1 - start, .66 + b * .26);                 // uneven speeds
+      var rise = lowest + 150 + c * 160;
+      var drift = side * (50 + d * 90) + (c - .5) * 60;             // fan outward, with a little randomness
       var rot = gsap.getProperty(el, 'rotation');
-      // A whole row sways the same way, so neighbours never bump into each other
-      var sway = 11 + a * 5, dir = Math.round(row * 2) % 2 ? -1 : 1;
       tl.fromTo(el, { y: 0, rotation: rot, scale: 1 }, {
-        y: -rise, rotation: rot + dir * (8 + a * 10), scale: 1.08 + b * .08, duration: dur, ease: 'power1.in'
-      }, 0);
-      // Bubble wobble: x swings left and right as the tile rises
-      tl.fromTo(el, { x: 0 }, { x: dir * sway, duration: dur / 3, ease: 'sine.inOut' }, 0)
-        .to(el, { x: -dir * sway * .7, duration: dur / 3, ease: 'sine.inOut' }, dur / 3)
-        .to(el, { x: dir * sway * .5, duration: dur / 3, ease: 'sine.inOut' }, dur * 2 / 3);
-      tl.fromTo($('.ptile__face', el), { opacity: 1 }, { opacity: 0, duration: dur * .3, ease: 'none' }, dur * .7);
+        y: -rise, rotation: rot + (d - .5) * 70, scale: .9 + b * .3, duration: dur, ease: 'power1.in'
+      }, start);
+      var w = 8 + a * 10;                                           // bubble wobble on top of the drift
+      tl.fromTo(el, { x: 0 }, { x: drift * .35 + w, duration: dur * .35, ease: 'sine.inOut' }, start)
+        .to(el, { x: drift * .7 - w, duration: dur * .35, ease: 'sine.inOut' }, start + dur * .35)
+        .to(el, { x: drift, duration: dur * .3, ease: 'sine.inOut' }, start + dur * .7);
+      tl.fromTo($('.ptile__face', el), { opacity: 1 }, { opacity: 0, duration: dur * .3, ease: 'none' }, start + dur * .7);
     });
     ScrollTrigger.refresh();
     return tl;
@@ -477,93 +480,6 @@
   window.addEventListener('scroll', queueFrame, { passive: true });
   window.addEventListener('resize', queueFrame);
   onFrame();
-
-  /* ---------- footer name: aurora gradient + liquid letter wave ---------- */
-  (function () {
-    var big = $('.footer__big');
-    if (!big) return;
-    var words = $$(':scope > span', big);
-    // One span per letter; each letter paints its slice of the word's gradient
-    words.forEach(function (w) {
-      var txt = w.textContent; w.textContent = '';
-      txt.split('').forEach(function (ch) { var l = document.createElement('span'); l.className = 'fl'; l.textContent = ch; w.appendChild(l); });
-    });
-    var letters = $$('.fl', big), centers = [];
-    function measure() {
-      var br = big.getBoundingClientRect();
-      words.forEach(function (w) {
-        w.style.setProperty('--ww', w.offsetWidth + 'px'); w.style.setProperty('--wh', w.offsetHeight + 'px');
-        $$('.fl', w).forEach(function (l) { l.style.setProperty('--lx', l.offsetLeft + 'px'); l.style.setProperty('--ly', l.offsetTop + 'px'); });
-      });
-      centers = letters.map(function (l) { var r = l.getBoundingClientRect(); return r.left - br.left + r.width / 2; });
-    }
-    measure();
-    window.addEventListener('resize', measure);
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
-
-    if (reduce) {
-      if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { big.classList.toggle('is-live', es[0].isIntersecting); }).observe(big);
-      return;
-    }
-
-    // Every frame while the name is on screen:
-    //  - letters drop in from above one after another, tied to scroll (reverses on scroll up)
-    //  - a slow wave keeps the letters gently swaying, stronger on hover
-    //  - letters under the pointer swell like liquid
-    var amp = 0, hovered = false, px = -9999, pxS = -9999, running = false, t0 = performance.now(), spot = { v: 0 };
-    var n = letters.length, K = 3.5;
-    function easeOut(x) { return 1 - Math.pow(1 - x, 3); }
-    function tick() {
-      var t = (performance.now() - t0) / 1000;
-      amp += ((hovered ? 1 : .55) - amp) * .05;
-      pxS += (px - pxS) * .12;
-      var br = big.getBoundingClientRect(), vh = window.innerHeight, bw = br.width || 1;
-      // 0 when the name's top reaches the bottom of the screen, 1 once it has risen well into view
-      var P = Math.min(1, Math.max(0, (vh - br.top - 30) / (br.height * .95 + 60)));
-      letters.forEach(function (l, i) {
-        var local = Math.min(1, Math.max(0, (P * (n + K) - i) / K));
-        var e = easeOut(local);
-        var d = (centers[i] - pxS) / (bw * .09);
-        var swell = hovered ? Math.exp(-d * d) : 0;
-        var ph = t * 1.5 - i * .5;
-        var y = -(Math.sin(ph) * .03 + swell * .07) * amp;
-        var sc = 1 + (Math.sin(ph + 1.2) * .022 + swell * .06) * amp;
-        l.style.setProperty('--wy', y.toFixed(4) + 'em');
-        l.style.setProperty('--ws', sc.toFixed(4));
-        l.style.setProperty('--dy', (-(1 - e) * .6).toFixed(4) + 'em');
-        l.style.setProperty('--do', Math.pow(local, 1.4).toFixed(3));
-      });
-    }
-    function start() { if (!running) { running = true; gsap.ticker.add(tick); } }
-    function stop() { if (running) { running = false; gsap.ticker.remove(tick); } }
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (es) {
-        var on = es[0].isIntersecting;
-        big.classList.toggle('is-live', on);
-        if (on) start(); else stop();
-      }, { rootMargin: '120px 0px' }).observe(big);
-    } else { big.classList.add('is-live'); start(); }
-    tick();
-
-    big.addEventListener('pointermove', function (e) {
-      var r0 = big.getBoundingClientRect();
-      px = e.clientX - r0.left;
-      if (pxS < -9000) pxS = px;
-      words.forEach(function (w) {
-        var r = w.getBoundingClientRect();
-        w.style.setProperty('--mx', (e.clientX - r.left) + 'px');
-        w.style.setProperty('--my', (e.clientY - r.top) + 'px');
-      });
-    });
-    big.addEventListener('pointerenter', function () {
-      hovered = true;
-      gsap.to(spot, { v: 1, duration: .5, onUpdate: function () { big.style.setProperty('--spot', spot.v.toFixed(3)); } });
-    });
-    big.addEventListener('pointerleave', function () {
-      hovered = false; px = -9999; pxS = -9999;
-      gsap.to(spot, { v: 0, duration: .6, onUpdate: function () { big.style.setProperty('--spot', spot.v.toFixed(3)); } });
-    });
-  })();
 
   /* ---------- counters ---------- */
   $$('[data-count]').forEach(function (el) {

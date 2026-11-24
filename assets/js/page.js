@@ -29,24 +29,8 @@
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
-  /* ---------- footer name: one continuous gradient across the letters ---------- */
-  var big = document.querySelector('.footer__big');
-  if (!big) return;
-  var words = [].slice.call(big.children);
-  words.forEach(function (w) {
-    var txt = w.textContent; w.textContent = '';
-    txt.split('').forEach(function (ch) { var l = document.createElement('span'); l.className = 'fl'; l.textContent = ch; w.appendChild(l); });
+  /* ---------- back to top ---------- */
+  [].forEach.call(document.querySelectorAll('[data-scrolltop]'), function (b) {
+    b.addEventListener('click', function () { if (lenis) lenis.scrollTo(0, { duration: 1.4 }); else window.scrollTo({ top: 0, behavior: 'smooth' }); });
   });
-  function measure() {
-    words.forEach(function (w) {
-      w.style.setProperty('--ww', w.offsetWidth + 'px'); w.style.setProperty('--wh', w.offsetHeight + 'px');
-      [].forEach.call(w.querySelectorAll('.fl'), function (l) { l.style.setProperty('--lx', l.offsetLeft + 'px'); l.style.setProperty('--ly', l.offsetTop + 'px'); });
-    });
-  }
-  measure();
-  window.addEventListener('resize', measure);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
-  if ('IntersectionObserver' in window) {
-    new IntersectionObserver(function (es) { big.classList.toggle('is-live', es[0].isIntersecting); }).observe(big);
-  } else big.classList.add('is-live');
 })();
