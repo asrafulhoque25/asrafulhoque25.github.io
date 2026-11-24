@@ -345,32 +345,22 @@
     // Tiles float up out of their cluster as you scroll, each on its own path.
     // The "random" values are seeded, so every visit moves the same way.
     function seeded(n) { var x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
-    // Tiles break out of the tidy cluster and scatter upward like bubbles:
-    // each starts a moment apart (all within a short window, so there are no big gaps),
-    // rises at its own speed and drifts outward from the cluster's centre,
-    // wobbling a little, then fades out as it clears the top of the screen.
+    // Tiles fly off in a straight line, 45 degrees up and to the left. Every tile
+    // travels the same distance in the same direction, and the ones nearer the front
+    // (upper-left) leave a moment earlier. Because no tile can ever catch the one ahead
+    // of it, they never overlap, and the small head starts keep the gaps tight.
     // The fade sits on the inner face so it never clashes with the page-load fade-in.
     var tiles = $$('.ptile');
     var rects = tiles.map(function (el) { return el.getBoundingClientRect(); });
-    var midX = rects.reduce(function (s, r) { return s + r.left + r.width / 2; }, 0) / rects.length;
-    var span = Math.max.apply(null, rects.map(function (r) { return Math.abs(r.left + r.width / 2 - midX); })) || 1;
     var lowest = Math.max.apply(null, rects.map(function (r) { return r.bottom; })) - sr.top;
+    var dist = lowest + 160;                                        // far enough for every tile to clear the top
+    var lead = rects.map(function (r) { return -((r.left + r.width / 2) + (r.top + r.height / 2)); });
+    var lMin = Math.min.apply(null, lead), lMax = Math.max.apply(null, lead);
+    var spread = .05, dur = 1 - spread;
     tiles.forEach(function (el, i) {
-      var a = seeded(i + 1), b = seeded(i + 21), c = seeded(i + 41), d = seeded(i + 61);
-      var r = rects[i];
-      var side = (r.left + r.width / 2 - midX) / span;             // -1 left edge … 1 right edge
-      var start = a * .16;                                          // small, uneven head starts
-      var dur = Math.min(1 - start, .66 + b * .26);                 // uneven speeds
-      var rise = lowest + 150 + c * 160;
-      var drift = side * (50 + d * 90) + (c - .5) * 60;             // fan outward, with a little randomness
-      var rot = gsap.getProperty(el, 'rotation');
-      tl.fromTo(el, { y: 0, rotation: rot, scale: 1 }, {
-        y: -rise, rotation: rot + (d - .5) * 70, scale: .9 + b * .3, duration: dur, ease: 'power1.in'
-      }, start);
-      var w = 8 + a * 10;                                           // bubble wobble on top of the drift
-      tl.fromTo(el, { x: 0 }, { x: drift * .35 + w, duration: dur * .35, ease: 'sine.inOut' }, start)
-        .to(el, { x: drift * .7 - w, duration: dur * .35, ease: 'sine.inOut' }, start + dur * .35)
-        .to(el, { x: drift, duration: dur * .3, ease: 'sine.inOut' }, start + dur * .7);
+      var front = lMax > lMin ? (lead[i] - lMin) / (lMax - lMin) : 1; // 1 = furthest ahead
+      var start = (1 - front) * spread;
+      tl.fromTo(el, { x: 0, y: 0 }, { x: -dist, y: -dist, duration: dur, ease: 'power1.in' }, start);
       tl.fromTo($('.ptile__face', el), { opacity: 1 }, { opacity: 0, duration: dur * .3, ease: 'none' }, start + dur * .7);
     });
     ScrollTrigger.refresh();
