@@ -345,22 +345,30 @@
     // Tiles float up out of their cluster as you scroll, each on its own path.
     // The "random" values are seeded, so every visit moves the same way.
     function seeded(n) { var x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
-    // Tiles leave one after another with clear gaps: the first starts right away,
-    // each next one a little later, and every tile flies past the top of the screen
-    // and fades out before the hero is gone. The fade sits on the inner face, so it
-    // never clashes with the page-load fade-in on the tile itself.
-    var tiles = $$('.ptile'), n = tiles.length, gap = .07, dur = 1 - gap * (n - 1);
+    // Tiles rise together like bubbles: all start at once, the top row a little
+    // faster and the bottom row a little slower, each wobbling gently side to side.
+    // They all clear the top of the screen and fade out before the hero is gone.
+    // The fade sits on the inner face so it never clashes with the page-load fade-in.
+    var tiles = $$('.ptile');
+    var tops = tiles.map(function (el) { return el.getBoundingClientRect().top; });
+    var minTop = Math.min.apply(null, tops), maxTop = Math.max.apply(null, tops);
+    var lowest = maxTop - sr.top + tiles[0].offsetHeight;
     tiles.forEach(function (el, i) {
       var a = seeded(i + 1), b = seeded(i + 21), c = seeded(i + 41);
-      var r = el.getBoundingClientRect();
-      var rise = (r.top - sr.top) + r.height + 140 + b * 220;
+      var row = maxTop > minTop ? (tops[i] - minTop) / (maxTop - minTop) : 0;   // 0 = top row, 1 = bottom row
+      var dur = .86 + row * .14;                                               // top rows finish sooner = move faster
+      var rise = lowest + 160 + b * 60;
       var rot = gsap.getProperty(el, 'rotation');
-      var start = i * gap;
-      tl.fromTo(el, { x: 0, y: 0, rotation: rot, scale: 1 }, {
-        x: (a - .5) * 220, y: -rise, rotation: rot + (c - .5) * 80, scale: .85 + a * .3,
-        duration: dur, ease: 'power2.in'
-      }, start);
-      tl.fromTo($('.ptile__face', el), { opacity: 1 }, { opacity: 0, duration: dur * .4, ease: 'none' }, start + dur * .6);
+      // A whole row sways the same way, so neighbours never bump into each other
+      var sway = 11 + a * 5, dir = Math.round(row * 2) % 2 ? -1 : 1;
+      tl.fromTo(el, { y: 0, rotation: rot, scale: 1 }, {
+        y: -rise, rotation: rot + dir * (8 + a * 10), scale: 1.08 + b * .08, duration: dur, ease: 'power1.in'
+      }, 0);
+      // Bubble wobble: x swings left and right as the tile rises
+      tl.fromTo(el, { x: 0 }, { x: dir * sway, duration: dur / 3, ease: 'sine.inOut' }, 0)
+        .to(el, { x: -dir * sway * .7, duration: dur / 3, ease: 'sine.inOut' }, dur / 3)
+        .to(el, { x: dir * sway * .5, duration: dur / 3, ease: 'sine.inOut' }, dur * 2 / 3);
+      tl.fromTo($('.ptile__face', el), { opacity: 1 }, { opacity: 0, duration: dur * .3, ease: 'none' }, dur * .7);
     });
     ScrollTrigger.refresh();
     return tl;
