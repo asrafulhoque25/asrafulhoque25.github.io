@@ -345,14 +345,14 @@
     // Tiles float up out of their cluster as you scroll, each on its own path.
     // The "random" values are seeded, so every visit moves the same way.
     function seeded(n) { var x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
-    // Tiles fly off in a straight line, 55 degrees up and to the left, with uneven
+    // Tiles fly off in a straight line, 63 degrees up and slightly to the left, with uneven
     // spacing: they leave one after another at irregular moments and at slightly
     // different speeds. Front tiles (furthest along the path) always leave first and
     // are never slower than the tiles behind them, so no tile can catch the one ahead:
     // the gaps grow unevenly but tiles never overlap.
     // The fade sits on the inner face so it never clashes with the page-load fade-in.
     var tiles = $$('.ptile');
-    var ang = 55 * Math.PI / 180, ux = -Math.cos(ang), uy = -Math.sin(ang);   // up-left, 55 degrees above horizontal
+    var ang = 63 * Math.PI / 180, ux = -Math.cos(ang), uy = -Math.sin(ang);   // mostly up, a little left: 63 degrees above horizontal
     var rects = tiles.map(function (el) { return el.getBoundingClientRect(); });
     var lowest = Math.max.apply(null, rects.map(function (r) { return r.bottom; })) - sr.top;
     var dist = (lowest + 160) / -uy;                                         // far enough for every tile to clear the top
