@@ -263,7 +263,7 @@
   if (!animate) {
     var ld = $('.loader'); if (ld) ld.style.display = 'none';
     body.classList.remove('is-loading');
-    onScene(function (s) { if (s.galaxy) s.galaxy.showNow(); });
+    onScene(function (s) { if (s.pixels) s.pixels.showNow(); });
     return;
   }
 
@@ -308,7 +308,7 @@
   window.addEventListener('resize', queueCheck);
 
   /* ---------- preloader: a short terminal boot ----------
-     First visit: about 1.3s of "npm run" output while the galaxy, fonts and
+     First visit: about 1.3s of "npm run" output while the pixels, fonts and
      portrait load. Later visits in the same tab skip straight to the intro. */
   var loader = $('.loader');
   var out = $('.term__out');
@@ -336,8 +336,8 @@
   if (!repeat) {
     bootTl
       .to(typed, { n: CMD.length, duration: .5, ease: 'none', onUpdate: function () { out.innerHTML = lines(); } })
-      .add(function () { out.innerHTML = lines('\n<span class="dim">&gt; compiling</span> galaxy.glsl <span class="dim">...........</span> <span class="ok">done</span>'); }, '+=.12')
-      .add(function () { out.innerHTML = lines('\n<span class="dim">&gt; compiling</span> galaxy.glsl <span class="dim">...........</span> <span class="ok">done</span>\n<span class="dim">&gt; mounting</span> &lt;AsrafulHoque /&gt; <span class="dim">.......</span> <span class="ok">done</span>'); }, '+=.22')
+      .add(function () { out.innerHTML = lines('\n<span class="dim">&gt; compiling</span> figma &rarr; html <span class="dim">..........</span> <span class="ok">done</span>'); }, '+=.12')
+      .add(function () { out.innerHTML = lines('\n<span class="dim">&gt; compiling</span> figma &rarr; html <span class="dim">..........</span> <span class="ok">done</span>\n<span class="dim">&gt; mounting</span> &lt;AsrafulHoque /&gt; <span class="dim">.......</span> <span class="ok">done</span>'); }, '+=.22')
       .to(counter, { v: 100, duration: 1.05, ease: 'power2.inOut', onUpdate: function () { num.textContent = Math.round(counter.v); } }, 0)
       .to('.loader__bar', { scaleX: 1, duration: 1.05, ease: 'power2.inOut' }, 0);
   } else {
@@ -360,7 +360,7 @@
       }
     });
     tl.to('.term', { opacity: 0, y: -14, scale: .97, duration: .45, delay: repeat ? 0 : .28, ease: 'power2.in' })
-      .add(function () { onScene(function (s) { if (s.galaxy) s.galaxy.intro(2.6); }); }, '-=.15')
+      .add(function () { onScene(function (s) { if (s.pixels) s.pixels.intro(2.4); }); }, '-=.15')
       .to(loader, { opacity: 0, duration: .7, ease: 'power2.out' }, '-=.1')
       .to(heroChars, { yPercent: 0, opacity: 1, duration: 1.3, stagger: .12, ease: 'expo.out' }, '-=.55')
       .to('.px__portrait img', { yPercent: 0, opacity: 1, duration: 1.5, ease: 'expo.out', clearProps: 'transform' }, '-=1.1')
