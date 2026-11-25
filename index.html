@@ -43,10 +43,11 @@
   <!-- Fonts (self-hosted) -->
   <link rel="preload" href="assets/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/anton.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/jetbrains-mono-500.woff2" as="font" type="font/woff2" crossorigin>
 
   <link rel="preload" as="image" href="assets/images/asraful-cutout.webp" fetchpriority="high">
-  <link rel="stylesheet" href="assets/css/main.css?v=20261124f">
-  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="assets/css/main.css?v=20261125a">
+  <script>(function(d){d.classList.add('js');try{if(window.WebGLRenderingContext&&matchMedia('(min-width: 901px)').matches&&!matchMedia('(prefers-reduced-motion: reduce)').matches)d.classList.add('gl3d');}catch(e){}})(document.documentElement);</script>
 
   <!-- Structured data -->
   <script type="application/ld+json">
@@ -169,14 +170,14 @@
 
   <!-- Preloader -->
   <div class="loader" aria-hidden="true">
-    <div class="loader__inner">
-      <div class="loader__name"><span>Asraful</span><span>Hoque</span></div>
-      <div class="loader__count"><span class="loader__num">0</span>%</div>
+    <div class="term">
+      <div class="term__bar"><i></i><i></i><i></i><span>~/asraful &mdash; zsh</span></div>
+      <pre class="term__body"><code class="term__out"></code><span class="term__caret"></span></pre>
+      <div class="term__progress"><span class="term__br">&lt;</span><span class="term__track"><span class="loader__bar"></span></span><span class="term__br">/&gt;</span><span class="loader__num">0</span></div>
     </div>
-    <div class="loader__bar"><span></span></div>
   </div>
 
-  <div class="bgfx" aria-hidden="true"><i class="bgfx__b bgfx__b--1"></i><i class="bgfx__b bgfx__b--2"></i><i class="bgfx__b bgfx__b--3"></i></div>
+  <canvas class="galaxy" aria-hidden="true"></canvas>
   <div class="grain" aria-hidden="true"></div>
   <div class="progress" aria-hidden="true"><span></span></div>
   <div class="cursor" aria-hidden="true"><div class="cursor__dot"></div><div class="cursor__ring"><span class="cursor__label">View</span></div></div>
@@ -263,7 +264,7 @@
 
         <div class="px__bar">
           <div class="px__intro">
-            <p class="eyebrow"><span class="dot"></span>Full-Stack Developer · Dhaka, Bangladesh</p>
+            <p class="eyebrow"><span class="dot"></span>Full-Stack Developer · Dhaka, Bangladesh <span class="hero__time">· <time data-clock>--:--</time> local</span></p>
             <p class="px__tagline"><span class="tg-line">Websites, web apps</span> <span class="tg-line">&amp; Shopify stores,</span> <em class="serif tg-line">from Figma to deploy.</em></p>
           </div>
           <div class="px__actions">
@@ -318,7 +319,7 @@
     <!-- ABOUT -->
     <section class="about section" id="about" data-theme="light" aria-labelledby="about-title">
       <div class="section__head">
-        <p class="eyebrow">About me</p>
+        <p class="eyebrow eyebrow--tag">About me</p>
         <h2 class="visually-hidden" id="about-title">About Md Asraful Hoque</h2>
           <p class="hand-note"><span class="tag-hand" style="--r:-3deg">one person, Figma to live site</span></p>
       </div>
@@ -357,7 +358,7 @@
     <section class="services section" id="services" aria-labelledby="services-title">
       <div class="svc-head">
         <div class="svc-head__main">
-          <p class="eyebrow">What I do</p>
+          <p class="eyebrow eyebrow--tag">What I do</p>
           <h2 class="title" id="services-title"><span class="split-chars">Services</span> <em class="serif split-chars">that ship</em></h2>
           <p class="hand-note"><span class="tag-hand" style="--r:2deg">not sure which one? just ask me</span></p>
         </div>
@@ -449,7 +450,7 @@
     <section class="featured" id="work" aria-labelledby="work-title">
       <div class="featured__pin">
         <div class="featured__head">
-          <p class="eyebrow">Selected work</p>
+          <p class="eyebrow eyebrow--tag">Selected work</p>
           <h2 class="title" id="work-title"><span class="split-chars">Recent</span> <em class="serif split-chars">projects</em></h2>
           <p class="hand-note"><span class="tag-hand" style="--r:-2deg">all real, all live. go click around</span></p>
           <p class="featured__hint">Scroll to explore <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="m12 5 7 7-7 7" /></svg></p>
@@ -457,7 +458,7 @@
         <div class="featured__track">
           <article class="fcard" data-cursor="Visit">
             <a href="https://pixxen.com/" target="_blank" rel="noopener" class="fcard__link">
-              <div class="fcard__media"><img src="assets/images/portfolio/pixxen.webp" alt="Pixxen UI/UX design agency website" width="1600" height="1200" loading="lazy"><span class="fcard__new">New</span></div>
+              <div class="fcard__media"><span class="fcard__bar" aria-hidden="true"><i></i><i></i><i></i><b>pixxen.com</b></span><img src="assets/images/portfolio/pixxen.webp" alt="Pixxen UI/UX design agency website" width="1600" height="1200" loading="lazy"><span class="fcard__new">New</span></div>
               <div class="fcard__meta"><span>WordPress · Custom theme</span></div>
               <h3 class="fcard__title">Pixxen</h3>
               <p class="fcard__desc">Website for a UI/UX design agency serving SaaS companies and startups worldwide.</p>
@@ -465,7 +466,7 @@
           </article>
           <article class="fcard" data-cursor="Visit">
             <a href="https://pexnet.com/" target="_blank" rel="noopener" class="fcard__link">
-              <div class="fcard__media"><img src="assets/images/portfolio/pexnet.webp" alt="Pexnet local SEO agency website" width="1600" height="1200" loading="lazy"><span class="fcard__new">New</span></div>
+              <div class="fcard__media"><span class="fcard__bar" aria-hidden="true"><i></i><i></i><i></i><b>pexnet.com</b></span><img src="assets/images/portfolio/pexnet.webp" alt="Pexnet local SEO agency website" width="1600" height="1200" loading="lazy"><span class="fcard__new">New</span></div>
               <div class="fcard__meta"><span>WordPress · Custom theme</span></div>
               <h3 class="fcard__title">Pexnet</h3>
               <p class="fcard__desc">Local SEO agency site with niche landing pages, case studies and booking flows.</p>
@@ -473,7 +474,7 @@
           </article>
           <article class="fcard" data-cursor="Visit">
             <a href="https://quecut.com/" target="_blank" rel="noopener" class="fcard__link">
-              <div class="fcard__media"><img src="assets/images/portfolio/quecut.webp" alt="Quecut graphic design agency website" width="1600" height="1200" loading="lazy"><span class="fcard__new">New</span></div>
+              <div class="fcard__media"><span class="fcard__bar" aria-hidden="true"><i></i><i></i><i></i><b>quecut.com</b></span><img src="assets/images/portfolio/quecut.webp" alt="Quecut graphic design agency website" width="1600" height="1200" loading="lazy"><span class="fcard__new">New</span></div>
               <div class="fcard__meta"><span>WordPress · Custom theme</span></div>
               <h3 class="fcard__title">Quecut</h3>
               <p class="fcard__desc">Graphic design agency site covering nine services, built to turn visitors into quote requests.</p>
@@ -481,7 +482,7 @@
           </article>
           <article class="fcard" data-cursor="Visit">
             <a href="https://wadialbadaitsolutions.ae/" target="_blank" rel="noopener" class="fcard__link">
-              <div class="fcard__media"><img src="assets/images/portfolio/wadialbada.webp" alt="Wadi Al Bada IT Solutions digital agency website in Dubai" width="1600" height="1200" loading="lazy"><span class="fcard__new">New</span></div>
+              <div class="fcard__media"><span class="fcard__bar" aria-hidden="true"><i></i><i></i><i></i><b>wadialbadaitsolutions.ae</b></span><img src="assets/images/portfolio/wadialbada.webp" alt="Wadi Al Bada IT Solutions digital agency website in Dubai" width="1600" height="1200" loading="lazy"><span class="fcard__new">New</span></div>
               <div class="fcard__meta"><span>WordPress · Elementor</span></div>
               <h3 class="fcard__title">Wadi Al Bada</h3>
               <p class="fcard__desc">Digital growth agency in Dubai offering marketing, SEO, web and app development.</p>
@@ -489,7 +490,7 @@
           </article>
           <article class="fcard" data-cursor="Visit">
             <a href="https://asrafulhoque25.github.io/hospital/index.html" target="_blank" rel="noopener" class="fcard__link">
-              <div class="fcard__media"><img src="assets/images/portfolio/project6.webp" alt="Pinnacle Fertility IVF clinic website" width="1920" height="1508" loading="lazy"></div>
+              <div class="fcard__media"><span class="fcard__bar" aria-hidden="true"><i></i><i></i><i></i><b>asrafulhoque25.github.io/hospital</b></span><img src="assets/images/portfolio/project6.webp" alt="Pinnacle Fertility IVF clinic website" width="1920" height="1508" loading="lazy"></div>
               <div class="fcard__meta"><span>Tailwind CSS</span></div>
               <h3 class="fcard__title">Pinnacle Fertility</h3>
               <p class="fcard__desc">A warm, trust-first website for Atlanta's premier IVF clinic.</p>
@@ -497,7 +498,7 @@
           </article>
           <article class="fcard" data-cursor="Visit">
             <a href="https://stem-academy-three.vercel.app/" target="_blank" rel="noopener" class="fcard__link">
-              <div class="fcard__media"><img src="assets/images/portfolio/project3.webp" alt="STEM Academy education platform built with React" width="1920" height="1407" loading="lazy"></div>
+              <div class="fcard__media"><span class="fcard__bar" aria-hidden="true"><i></i><i></i><i></i><b>stem-academy-three.vercel.app</b></span><img src="assets/images/portfolio/project3.webp" alt="STEM Academy education platform built with React" width="1920" height="1407" loading="lazy"></div>
               <div class="fcard__meta"><span>React.js · Vercel</span></div>
               <h3 class="fcard__title">STEM Academy</h3>
               <p class="fcard__desc">Education platform in React that guides students through courses and study abroad.</p>
@@ -515,7 +516,7 @@
     <section class="index section" id="index" data-theme="light" aria-labelledby="index-title">
       <div class="section__head section__head--row">
         <div>
-          <p class="eyebrow">Project index</p>
+          <p class="eyebrow eyebrow--tag">Project index</p>
           <h2 class="title" id="index-title"><span class="split-chars">All</span> <em class="serif split-chars">work</em></h2>
           <p class="hand-note"><span class="tag-hand" style="--r:3deg">19 builds and counting</span></p>
         </div>
@@ -558,22 +559,22 @@
     <!-- PROCESS -->
     <section class="process section" id="process" aria-labelledby="process-title">
       <div class="section__head">
-        <p class="eyebrow">How we'll work</p>
+        <p class="eyebrow eyebrow--tag">How we'll work</p>
         <h2 class="title" id="process-title"><span class="split-chars">Simple</span> <em class="serif split-chars">process</em></h2>
           <p class="hand-note"><span class="tag-hand" style="--r:-3deg">you'll never be left guessing</span></p>
       </div>
-      <ol class="steps">
-        <li class="step" data-reveal><span class="step__n">01</span><h3>Brief</h3><p>You share the goal, design or reference sites. I recommend the right stack and confirm scope, price and deadline.</p></li>
-        <li class="step" data-reveal><span class="step__n">02</span><h3>Design</h3><p>If you need it, I design the key screens in Figma first. You review and we polish until it's right.</p></li>
-        <li class="step" data-reveal><span class="step__n">03</span><h3>Build</h3><p>Frontend, CMS and backend built together, with a staging link and progress updates so you're never guessing.</p></li>
-        <li class="step" data-reveal><span class="step__n">04</span><h3>Launch</h3><p>Speed, SEO and device checks, then I deploy it live and hand over a site your team can manage.</p></li>
-      </ol>
+      <div class="gitlog" data-reveal><div class="term__bar gitlog__bar"><i></i><i></i><i></i><span>~/your-project &mdash; git log --graph</span></div><ol class="steps steps--git">
+        <li class="step" data-reveal><span class="step__commit"><code class="step__hash">a1f3c2e</code><span class="step__ref">(HEAD &rarr; brief)</span></span><h3>Brief</h3><p>You share the goal, design or reference sites. I recommend the right stack and confirm scope, price and deadline.</p></li>
+        <li class="step" data-reveal><span class="step__commit"><code class="step__hash">9be41d0</code><span class="step__ref">(design)</span></span><h3>Design</h3><p>If you need it, I design the key screens in Figma first. You review and we polish until it's right.</p></li>
+        <li class="step" data-reveal><span class="step__commit"><code class="step__hash">4c77e0b</code><span class="step__ref">(build)</span></span><h3>Build</h3><p>Frontend, CMS and backend built together, with a staging link and progress updates so you're never guessing.</p></li>
+        <li class="step" data-reveal><span class="step__commit"><code class="step__hash">e21f9a7</code><span class="step__ref">(tag: v1.0 &middot; live)</span></span><h3>Launch</h3><p>Speed, SEO and device checks, then I deploy it live and hand over a site your team can manage.</p></li>
+      </ol></div>
     </section>
 
     <!-- EXPERIENCE -->
     <section class="exp section" id="experience" data-theme="light" aria-labelledby="exp-title">
       <div class="section__head">
-        <p class="eyebrow">Resume</p>
+        <p class="eyebrow eyebrow--tag">Resume</p>
         <h2 class="title" id="exp-title"><span class="split-chars">Experience</span> <em class="serif split-chars">&amp; education</em></h2>
           <p class="hand-note"><span class="tag-hand" style="--r:2deg">SEO first, then code</span></p>
       </div>
@@ -655,7 +656,7 @@
     <!-- PRICING -->
     <section class="pricing section" id="pricing" aria-labelledby="pricing-title">
       <div class="section__head">
-        <p class="eyebrow">Pricing</p>
+        <p class="eyebrow eyebrow--tag">Pricing</p>
         <h2 class="title" id="pricing-title"><span class="split-chars">Clear</span> <em class="serif split-chars">packages</em></h2>
           <p class="hand-note"><span class="tag-hand" style="--r:-2deg">unlimited revisions on every plan</span></p>
         <p class="section__sub">Starting prices for design-to-code builds. Need a WordPress, Next.js or Webflow site with backend work? <a href="#contact" class="link">Ask for a custom quote.</a></p>
@@ -687,33 +688,36 @@
     </section>
 
     <!-- GALLERY -->
-    <section class="gallery" aria-labelledby="gallery-title">
-      <div class="gallery__head section section--tight">
-        <div>
-          <p class="eyebrow">Off screen</p>
-          <h2 class="title" id="gallery-title"><span class="split-chars">Beyond</span> <em class="serif split-chars">the code</em></h2>
-          <p class="hand-note"><span class="tag-hand" style="--r:3deg">the people behind the work</span></p>
-        </div>
-        <p class="gallery__note" data-reveal>Team days, trips and the people I build with. Good work starts with good people.</p>
-      </div>
-      <div class="gallery__rows">
-        <div class="gallery__row" data-dir="1">
-          <div class="gallery__set">
-            <figure><img src="assets/images/gallery/img1.webp" alt="Asraful Hoque with friends" width="375" height="300" decoding="async"></figure>
-            <figure><img src="assets/images/gallery/gimg9.webp" alt="Asraful Hoque with the team" width="375" height="300" decoding="async"></figure>
-            <figure><img src="assets/images/gallery/gimg1.webp" alt="Team outing" width="375" height="300" decoding="async"></figure>
-            <figure><img src="assets/images/gallery/gimg2.webp" alt="Asraful Hoque at an event" width="375" height="300" decoding="async"></figure>
-            <figure><img src="assets/images/gallery/gimg3.webp" alt="Asraful Hoque traveling" width="375" height="300" decoding="async"></figure>
+    <section class="gallery" id="gallery" aria-labelledby="gallery-title">
+      <div class="mem" data-mem>
+        <div class="mem__stage">
+          <canvas class="mem__canvas" aria-hidden="true"></canvas>
+          <div class="gallery__head section section--tight">
+            <div>
+              <p class="eyebrow eyebrow--tag">Off screen</p>
+              <h2 class="title" id="gallery-title"><span class="split-chars">Beyond</span> <em class="serif split-chars">the code</em></h2>
+              <p class="hand-note"><span class="tag-hand" style="--r:3deg">the people behind the work</span></p>
+            </div>
+            <p class="gallery__note" data-reveal>Team days, trips and the people I build with. Good work starts with good people.</p>
           </div>
-        </div>
-        <div class="gallery__row" data-dir="-1">
-          <div class="gallery__set">
-            <figure><img src="assets/images/gallery/gimg4.webp" alt="Asraful Hoque outdoors" width="375" height="300" decoding="async"></figure>
-            <figure><img src="assets/images/gallery/gimg6.webp" alt="Friends and colleagues" width="375" height="300" decoding="async"></figure>
-            <figure><img src="assets/images/gallery/gimg5.webp" alt="Asraful Hoque portrait" width="375" height="300" decoding="async"></figure>
-            <figure><img src="assets/images/gallery/gimg7.webp" alt="Asraful Hoque at work" width="375" height="300" decoding="async"></figure>
-            <figure><img src="assets/images/gallery/gimg8.webp" alt="Moments off screen" width="375" height="300" decoding="async"></figure>
+          <div class="mem__hud" aria-hidden="true">
+            <code class="mem__count">memories[<b class="mem__i">0</b>]</code>
+            <code class="mem__cap">// Asraful Hoque with friends</code>
           </div>
+          <div class="mem__rail" aria-hidden="true"><i></i></div>
+          <p class="mem__hint" aria-hidden="true"><code>scroll</code> to spin &middot; <code>click</code> a photo</p>
+          <ul class="mem__list">
+            <li class="mem__item"><figure><img src="assets/images/gallery/img1.webp" alt="Asraful Hoque with friends" width="375" height="300" loading="lazy" decoding="async"></figure></li>
+            <li class="mem__item"><figure><img src="assets/images/gallery/gimg9.webp" alt="Asraful Hoque with the team" width="375" height="300" loading="lazy" decoding="async"></figure></li>
+            <li class="mem__item"><figure><img src="assets/images/gallery/gimg1.webp" alt="Team outing" width="375" height="300" loading="lazy" decoding="async"></figure></li>
+            <li class="mem__item"><figure><img src="assets/images/gallery/gimg2.webp" alt="Asraful Hoque at an event" width="375" height="300" loading="lazy" decoding="async"></figure></li>
+            <li class="mem__item"><figure><img src="assets/images/gallery/gimg3.webp" alt="Asraful Hoque traveling" width="375" height="300" loading="lazy" decoding="async"></figure></li>
+            <li class="mem__item"><figure><img src="assets/images/gallery/gimg4.webp" alt="Asraful Hoque outdoors" width="375" height="300" loading="lazy" decoding="async"></figure></li>
+            <li class="mem__item"><figure><img src="assets/images/gallery/gimg6.webp" alt="Friends and colleagues" width="375" height="300" loading="lazy" decoding="async"></figure></li>
+            <li class="mem__item"><figure><img src="assets/images/gallery/gimg5.webp" alt="Asraful Hoque portrait" width="375" height="300" loading="lazy" decoding="async"></figure></li>
+            <li class="mem__item"><figure><img src="assets/images/gallery/gimg7.webp" alt="Asraful Hoque at work" width="375" height="300" loading="lazy" decoding="async"></figure></li>
+            <li class="mem__item"><figure><img src="assets/images/gallery/gimg8.webp" alt="Moments off screen" width="375" height="300" loading="lazy" decoding="async"></figure></li>
+          </ul>
         </div>
       </div>
     </section>
@@ -722,7 +726,7 @@
     <section class="faq section" id="faq" data-theme="light" aria-labelledby="faq-title">
       <div class="faq__grid">
         <div class="section__head">
-          <p class="eyebrow">FAQ</p>
+          <p class="eyebrow eyebrow--tag">FAQ</p>
           <h2 class="title" id="faq-title"><span class="split-chars">Good</span> <em class="serif split-chars">questions</em></h2>
           <p class="hand-note"><span class="tag-hand" style="--r:-3deg">no question is too small</span></p>
           <p class="section__sub">Still unsure? <a href="mailto:asrafulhoqueemon25@gmail.com" class="link">Email me</a> and I'll reply within a day.</p>
@@ -742,7 +746,7 @@
 
     <!-- CONTACT -->
     <section class="contact section" id="contact" aria-labelledby="contact-title">
-      <p class="eyebrow">Contact</p>
+      <p class="eyebrow eyebrow--tag">Contact</p>
       <h2 class="contact__title" id="contact-title">
         <span class="line"><span class="split-chars">Got a project?</span></span>
         <span class="line"><em class="serif split-chars">Let's build it.</em></span>
@@ -834,7 +838,7 @@
         <a href="https://dev.to/asraful_hoque" target="_blank" rel="me noopener" aria-label="DEV Community" title="DEV Community"><svg class="bi bi--devto" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7.42 10.05c-.18-.16-.46-.23-.84-.23H6l.02 2.44.04 2.45.56-.02c.41 0 .63-.07.83-.26.24-.24.26-.36.26-2.2 0-1.91-.02-1.96-.29-2.18zM0 4.94v14.12h24V4.94H0zM8.56 15.3c-.44.58-1.06.77-2.53.77H4.71V8.53h1.4c1.67 0 2.16.18 2.6.9.27.43.29.6.32 2.57.05 2.23-.02 2.73-.47 3.3zm5.09-5.47h-2.47v1.77h1.52v1.28l-.72.04-.75.03v1.77l1.22.03 1.2.04v1.28h-1.6c-1.53 0-1.6-.01-1.87-.3l-.3-.28v-3.16c0-3.02.01-3.18.25-3.48.23-.31.25-.31 1.88-.31h1.64v1.3zm4.68 5.45c-.17.43-.64.79-1 .79-.18 0-.45-.15-.67-.39-.32-.32-.45-.63-.82-2.08l-.9-3.39-.45-1.67h.76c.4 0 .75.02.75.05 0 .06 1.16 4.54 1.26 4.83.04.15.32-.7.73-2.3l.66-2.52.74-.04c.4-.02.73 0 .73.04 0 .14-1.67 6.38-1.8 6.68z"/></svg></a>
         <a href="https://www.pinterest.com/asrafulhoqueemon/" target="_blank" rel="me noopener" aria-label="Pinterest" title="Pinterest"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.39 18.592.026 11.985.026L12.017 0z"/></svg></a>
       </div>
-      <p>Designed &amp; built in Dhaka</p>
+      <p class="footer__made"><code>&lt;/&gt;</code> Designed &amp; built in Dhaka with Three.js</p>
     </div>
   </footer>
 
@@ -842,8 +846,9 @@
   <script src="assets/js/vendor/ScrollTrigger.min.js" defer></script>
   <script src="assets/js/vendor/lenis.min.js" defer></script>
   <script src="assets/js/vendor/matter.min.js" defer></script>
-  <script src="assets/js/main.js?v=20261124f" defer></script>
-  <script src="assets/js/footer-name.js?v=20261124f" defer></script>
-  <script src="assets/js/toss.js?v=20261124f" defer></script>
+  <script src="assets/js/main.js?v=20261125a" defer></script>
+  <script src="assets/js/footer-name.js?v=20261125a" defer></script>
+  <script src="assets/js/toss.js?v=20261125a" defer></script>
+  <script src="assets/js/scene.min.js?v=20261125a" defer></script>
 </body>
 </html>
