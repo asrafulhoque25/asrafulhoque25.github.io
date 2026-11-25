@@ -27,7 +27,7 @@ import { createMemories } from './memories.js';
   const KEYS = [
     { el: '#home', d: 8, polar: 64, azim: 0, sx: 0, sy: -0.02, op: 1 },
     { el: '.isyou', d: 6.4, polar: 70, azim: 36, sx: -0.27, sy: 0, op: 0.8, tilt: 6 },
-    { el: '#about', d: 8.2, polar: 74, azim: 78, sx: 0.32, sy: 0.04, op: 0.85, tilt: -8 },
+    { el: '#about', d: 8.6, polar: 74, azim: 78, sx: 0.34, sy: 0.08, op: 0.7, tilt: -8 },
     { el: '#services', d: 9.6, polar: 14, azim: 150, sx: -0.36, sy: 0.08, op: 0.5 },
     { el: '.toss', d: 12, polar: 38, azim: 190, sx: 0, sy: -0.08, op: 0.45 },
     { el: '#work', d: 5.4, polar: 74, azim: 232, sx: 0.05, sy: 0.12, op: 0.42 },
@@ -38,7 +38,7 @@ import { createMemories } from './memories.js';
     { el: '.gallery', d: 15, polar: 40, azim: 440, sx: -0.3, sy: 0.22, op: 0.4 },
     { el: '#faq', d: 8.6, polar: 72, azim: 480, sx: -0.34, sy: 0, op: 0.7 },
     { el: '#contact', d: 9, polar: 50, azim: 520, sx: 0.3, sy: 0.02, op: 0.8 },
-    { el: '.footer', d: 6.6, polar: 66, azim: 560, sx: 0, sy: 0.2, op: 1, m: { d: 8.5, sy: -0.16, op: 0.75 } },
+    { el: '.footer', d: 8, polar: 77, azim: 560, sx: 0.03, sy: 0.19, op: 0.9, m: { d: 8.5, sy: -0.16, op: 0.75 } },
   ];
   const canvas = document.querySelector('.galaxy');
   if (gl && canvas) {

@@ -106,7 +106,11 @@ export function createGalaxyPanel(galaxy, defaults) {
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && wrap.classList.contains('is-open')) { open(false); toggle.focus(); } });
 
   // show the toggle once the visitor has scrolled past the first screen
-  const check = () => wrap.classList.toggle('is-shown', window.scrollY > window.innerHeight * 0.6 || wrap.classList.contains('is-open'));
+  // hidden on the first screen and at the very bottom, where it would cover the footer credit
+  const check = () => {
+    const y = window.scrollY, end = document.documentElement.scrollHeight - window.innerHeight - 160;
+    wrap.classList.toggle('is-shown', (y > window.innerHeight * 0.6 && y < end) || wrap.classList.contains('is-open'));
+  };
   window.addEventListener('scroll', check, { passive: true });
   check();
   return wrap;
