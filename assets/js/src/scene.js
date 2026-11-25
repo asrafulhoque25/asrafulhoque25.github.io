@@ -39,7 +39,7 @@ import { createMemories } from './memories.js';
     { el: '.gallery', shape: 'grid', s: 1.15, sx: 0, sy: 0.08, rx: -64, op: 0.4 },
     { el: '#faq', shape: 'question', s: 0.62, sx: -0.38, sy: 0.3, ry: 14, op: 0.6 },
     { el: '#contact', shape: 'at', s: 0.72, sx: 0.34, sy: -0.24, ry: -12, op: 0.8 },
-    { el: '.footer', shape: 'rocket', s: 0.4, sx: 0.05, sy: 0.19, op: 0.95, m: { s: 0.36, sx: 0.3, sy: -0.02, op: 0.8 } },
+    { el: '.footer', shape: 'rocket', s: 0.4, sx: 0.03, sy: 0.19, op: 0.95, m: { s: 0.36, sx: 0.3, sy: -0.02, op: 0.8 } },
   ];
   const canvas = document.querySelector('.pixels');
   if (gl && canvas) {
