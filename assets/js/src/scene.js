@@ -26,17 +26,18 @@ import { createMemories } from './memories.js';
   // Each section gets the thing it is about, built from pixels.
   // s: size, sx/sy: where it sits on screen (-0.5..0.5), rx/ry: tilt in degrees, op: brightness.
   const KEYS = [
-    { el: '#home', shape: 'browser', s: 1.22, sx: 0.05, sy: 0.1, op: 1, m: { s: 1.05, sx: 0, sy: 0.02, op: 0.9 } },
+    { el: '#home', shape: 'grid', s: 1, sx: 0, sy: 0.3, rx: -74, op: 0.6, wave: 0.3, m: { s: 0.8, sx: 0, sy: 0.34, op: 0.35 } },
+    { el: '.marquee', shape: 'grid', s: 1.05, sx: 0, sy: 0.16, rx: -62, op: 0.7, wave: 0.5, m: { s: 0.8, sx: 0, sy: 0.34, op: 0.35 } },
     { el: '.isyou', shape: 'code', s: 0.9, sx: 0.3, sy: 0, ry: -18, op: 0.8 },
     { el: '#about', shape: 'design', s: 0.9, sx: 0.32, sy: 0.08, rx: 6, ry: -14, op: 0.75 },
     { el: '#services', shape: 'braces', s: 0.65, sx: 0.4, sy: -0.06, ry: -16, op: 0.45 },
-    { el: '.toss', shape: 'grid', s: 1, sx: 0, sy: 0.05, rx: -58, op: 0.55 },
+    { el: '.toss', shape: 'grid', s: 1, sx: 0, sy: 0.05, rx: -58, op: 0.55, wave: 0.25 },
     { el: '#work', shape: 'devices', s: 0.7, sx: 0.34, sy: -0.27, ry: -12, op: 0.7 },
     { el: '#index', shape: 'devices', s: 0.72, sx: 0.41, sy: 0.12, ry: -16, op: 0.45 },
     { el: '#process', shape: 'branch', s: 0.8, sx: 0.32, sy: -0.3, ry: -10, op: 0.9 },
     { el: '#experience', shape: 'terminal', s: 0.7, sx: 0.34, sy: -0.28, ry: -14, op: 0.5 },
     { el: '#pricing', shape: 'bag', s: 0.72, sx: 0.35, sy: -0.24, ry: -12, op: 0.8 },
-    { el: '.gallery', shape: 'grid', s: 1.15, sx: 0, sy: 0.08, rx: -64, op: 0.4 },
+    { el: '.gallery', shape: 'grid', s: 1.15, sx: 0, sy: 0.12, rx: -70, op: 0.4, wave: 0.25 },
     { el: '#faq', shape: 'question', s: 0.62, sx: -0.38, sy: 0.3, ry: 14, op: 0.6 },
     { el: '#contact', shape: 'at', s: 0.72, sx: 0.34, sy: -0.24, ry: -12, op: 0.8 },
     { el: '.footer', shape: 'rocket', s: 0.4, sx: 0.03, sy: 0.19, op: 0.95, m: { s: 0.36, sx: 0.3, sy: -0.02, op: 0.8 } },
