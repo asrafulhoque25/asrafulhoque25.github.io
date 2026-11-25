@@ -128,7 +128,7 @@ function sampleShape(name, n) {
   if (name === 'grid') {
     // an even field of pixels, like a design tool's canvas
     const cols = Math.round(Math.sqrt(n * 1.8)), rows = Math.ceil(n / cols);
-    const w = 11, h = w * rows / cols;
+    const w = 14, h = w * rows / cols;
     for (let i = 0; i < n; i++) {
       const cx = i % cols, cy = Math.floor(i / cols);
       out[i * 3] = (cx / (cols - 1) - 0.5) * w;
@@ -174,6 +174,7 @@ const VERT = /* glsl */`
   uniform float uOpacity;
   uniform vec3 uC1;
   uniform vec3 uC2;
+  uniform float uWave;
   attribute vec3 aA;
   attribute vec3 aB;
   attribute vec3 aS;
@@ -185,6 +186,10 @@ const VERT = /* glsl */`
     float t = clamp((uT - aR.x * 0.4) / 0.6, 0.0, 1.0);
     t = t * t * (3.0 - 2.0 * t);
     vec3 p = mix(aA, aB, t);
+    // a slow wave runs through flat fields of pixels (the hero floor, the gallery)
+    float wv = sin(p.x * 0.85 + uTime * 0.8) * cos(p.y * 0.7 + uTime * 0.55) + 0.5 * sin((p.x + p.y) * 0.45 - uTime * 0.5);
+    p.z += wv * uWave;
+    float edge = (1.0 - smoothstep(5.0, 7.0, abs(p.x))) * (1.0 - smoothstep(2.7, 3.9, abs(p.y)));
     float mid = sin(t * 3.14159);
     p += vec3(sin(aR.y * 6.28 + uTime * 0.9), cos(aR.y * 5.1 + uTime * 0.7), sin(aR.y * 4.3)) * mid * 0.5;
     p += vec3(sin(uTime * 0.8 + aR.y * 20.0), cos(uTime * 0.6 + aR.y * 13.0), 0.0) * 0.02;
@@ -204,10 +209,13 @@ const VERT = /* glsl */`
     clip.xy = ndc * clip.w;
     gl_Position = clip;
     gl_PointSize = uSize * (0.65 + aR.z * 0.7) * uPR * 8.0 / -mv.z;
+    // pixels very close to the camera (the front of a floor) fade, so text at the bottom of a screen stays clean
+    float near = smoothstep(4.2, 6.6, -mv.z);
     float g = clamp(p.x * 0.11 + p.y * 0.05 + 0.5, 0.0, 1.0);
     vCol = mix(uC1, uC2, g);
     vCol = mix(vCol, vec3(1.0), step(0.93, aR.w) * 0.8);
-    vA = uOpacity * (0.75 + 0.25 * sin(uTime * 2.0 + aR.y * 40.0)) * smoothstep(0.0, 0.2, uIntro) * (1.0 + f * 0.6);
+    vA = uOpacity * (0.75 + 0.25 * sin(uTime * 2.0 + aR.y * 40.0)) * smoothstep(0.0, 0.2, uIntro) * (1.0 + f * 0.6) * edge * near;
+    vCol = mix(vCol, vec3(1.0), clamp(wv, 0.0, 1.0) * uWave * 1.2);
   }
 `;
 
@@ -235,7 +243,7 @@ export const DEFAULTS = {
 const lerp = (a, b, t) => a + (b - a) * t;
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 const smooth = (t) => t * t * (3 - 2 * t);
-const POSE = ['s', 'sx', 'sy', 'rx', 'ry', 'op'];
+const POSE = ['s', 'sx', 'sy', 'rx', 'ry', 'op', 'wave'];
 
 export function createPixels(canvas, opts = {}) {
   const small = opts.small;
@@ -260,7 +268,7 @@ export function createPixels(canvas, opts = {}) {
       uniforms: {
         uT: { value: 0 }, uTime: { value: 0 }, uIntro: { value: reduce ? 1 : 0 }, uSize: { value: params.size }, uPR: { value: pr },
         uAspect: { value: 1 }, uMouse: { value: [9, 9] }, uForce: { value: params.cursor }, uVel: { value: 0 }, uOpacity: { value: 1 },
-        uC1: { value: new Color(c1) }, uC2: { value: new Color(c2) },
+        uC1: { value: new Color(c1) }, uC2: { value: new Color(c2) }, uWave: { value: 0 },
       },
     });
   }
@@ -328,12 +336,12 @@ export function createPixels(canvas, opts = {}) {
 
   /* ---------- one pose and one shape per section ---------- */
   const keys = (opts.keys || []).map((k) => {
-    const o = Object.assign({ shape: 'code', s: 1, sx: 0, sy: 0, rx: 0, ry: 0, op: 1 }, k);
+    const o = Object.assign({ shape: 'code', s: 1, sx: 0, sy: 0, rx: 0, ry: 0, op: 1, wave: 0 }, k);
     // phones: smaller shapes tucked against the edge, so they decorate instead of covering text
     if (small) Object.assign(o, { s: o.s * 0.62, sx: o.sx === 0 ? 0 : Math.sign(o.sx) * 0.32, op: o.op * 0.65 }, k.m || {});
     return o;
   });
-  const FALLBACK = { shape: 'code', s: small ? 0.5 : 0.8, sx: small ? 0.32 : 0.34, sy: 0.04, rx: 0, ry: -16, op: small ? 0.3 : 0.45 };
+  const FALLBACK = { wave: 0, shape: 'code', s: small ? 0.5 : 0.8, sx: small ? 0.32 : 0.34, sy: 0.04, rx: 0, ry: -16, op: small ? 0.3 : 0.45 };
   let anchors = [];
   function measure() {
     const vh = window.innerHeight, y0 = window.scrollY;
@@ -373,7 +381,7 @@ export function createPixels(canvas, opts = {}) {
     if (!manual) manualTo = now.t < 0.5 ? now.A.shape : now.B.shape;
   }
 
-  const cur = { s: 1, sx: 0, sy: 0, rx: 0, ry: 0, op: 1 };
+  const cur = { s: 1, sx: 0, sy: 0, rx: 0, ry: 0, op: 1, wave: 0 };
   let first = true, light = 0, mx = 9, my = 9, tmx = 9, tmy = 9, px = 0, py = 0;
   let time = 0, lastY = window.scrollY, vel = 0, introT = reduce ? 1 : 0, introDur = 0, introOn = false, introStart = 0;
   let W = 0, H = 0, dtLast = 0.016;
@@ -425,6 +433,7 @@ export function createPixels(canvas, opts = {}) {
       u.uT.value = t; u.uTime.value = time; u.uIntro.value = introT;
       u.uMouse.value[0] = mx; u.uMouse.value[1] = my;
       u.uVel.value = Math.min(Math.abs(vel) / 4000, 0.35);
+      u.uWave.value = reduce ? 0 : cur.wave;
     });
     glowMat.uniforms.uOpacity.value = cur.op * (1 - light);
     inkMat.uniforms.uOpacity.value = cur.op * light * (small ? 0.45 : 0.7);
