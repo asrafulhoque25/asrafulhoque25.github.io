@@ -4,8 +4,8 @@
      esbuild assets/js/src/scene.js --bundle --minify --format=iife \
        --outfile=assets/js/scene.min.js
    ========================================================= */
-import { createGalaxy, DEFAULTS } from './galaxy.js';
-import { createGalaxyPanel } from './galaxy-panel.js';
+import { createPixels, DEFAULTS } from './pixels.js';
+import { createPixelsPanel } from './pixels-panel.js';
 import { createMemories } from './memories.js';
 
 (function () {
@@ -22,32 +22,33 @@ import { createMemories } from './memories.js';
   }
   const gl = hasWebGL();
 
-  /* ---------- galaxy behind the page ---------- */
-  // One camera pose per section. sx/sy move the core on screen, op is brightness.
+  /* ---------- pixels behind the page ---------- */
+  // Each section gets the thing it is about, built from pixels.
+  // s: size, sx/sy: where it sits on screen (-0.5..0.5), rx/ry: tilt in degrees, op: brightness.
   const KEYS = [
-    { el: '#home', d: 8, polar: 64, azim: 0, sx: 0, sy: -0.02, op: 1 },
-    { el: '.isyou', d: 6.4, polar: 70, azim: 36, sx: -0.27, sy: 0, op: 0.8, tilt: 6 },
-    { el: '#about', d: 8.6, polar: 74, azim: 78, sx: 0.34, sy: 0.08, op: 0.7, tilt: -8 },
-    { el: '#services', d: 9.6, polar: 14, azim: 150, sx: -0.36, sy: 0.08, op: 0.5 },
-    { el: '.toss', d: 12, polar: 38, azim: 190, sx: 0, sy: -0.08, op: 0.45 },
-    { el: '#work', d: 5.4, polar: 74, azim: 232, sx: 0.05, sy: 0.12, op: 0.42 },
-    { el: '#index', d: 10, polar: 80, azim: 270, sx: 0.42, sy: -0.1, op: 0.55, tilt: 6 },
-    { el: '#process', d: 7.6, polar: 86, azim: 310, sx: 0.1, sy: 0.38, op: 0.9, m: { polar: 70, sy: 0, op: 0.6 } },
-    { el: '#experience', d: 8.6, polar: 64, azim: 352, sx: -0.36, sy: 0, op: 0.75 },
-    { el: '#pricing', d: 11, polar: 9, azim: 400, sx: 0.3, sy: 0.02, op: 0.45 },
-    { el: '.gallery', d: 15, polar: 40, azim: 440, sx: -0.3, sy: 0.22, op: 0.4 },
-    { el: '#faq', d: 8.6, polar: 72, azim: 480, sx: -0.34, sy: 0, op: 0.7 },
-    { el: '#contact', d: 9, polar: 50, azim: 520, sx: 0.3, sy: 0.02, op: 0.8 },
-    { el: '.footer', d: 8, polar: 77, azim: 560, sx: 0.03, sy: 0.19, op: 0.9, m: { d: 8.5, sy: -0.16, op: 0.75 } },
+    { el: '#home', shape: 'browser', s: 1.22, sx: 0.05, sy: 0.1, op: 1, m: { s: 1.05, sx: 0, sy: 0.02, op: 0.9 } },
+    { el: '.isyou', shape: 'code', s: 0.9, sx: 0.3, sy: 0, ry: -18, op: 0.8 },
+    { el: '#about', shape: 'design', s: 0.9, sx: 0.32, sy: 0.08, rx: 6, ry: -14, op: 0.75 },
+    { el: '#services', shape: 'braces', s: 0.65, sx: 0.4, sy: -0.06, ry: -16, op: 0.45 },
+    { el: '.toss', shape: 'grid', s: 1, sx: 0, sy: 0.05, rx: -58, op: 0.55 },
+    { el: '#work', shape: 'devices', s: 0.7, sx: 0.34, sy: -0.27, ry: -12, op: 0.7 },
+    { el: '#index', shape: 'devices', s: 0.72, sx: 0.41, sy: 0.12, ry: -16, op: 0.45 },
+    { el: '#process', shape: 'branch', s: 0.8, sx: 0.32, sy: -0.3, ry: -10, op: 0.9 },
+    { el: '#experience', shape: 'terminal', s: 0.7, sx: 0.34, sy: -0.28, ry: -14, op: 0.5 },
+    { el: '#pricing', shape: 'bag', s: 0.72, sx: 0.35, sy: -0.24, ry: -12, op: 0.8 },
+    { el: '.gallery', shape: 'grid', s: 1.15, sx: 0, sy: 0.08, rx: -64, op: 0.4 },
+    { el: '#faq', shape: 'question', s: 0.62, sx: -0.38, sy: 0.3, ry: 14, op: 0.6 },
+    { el: '#contact', shape: 'at', s: 0.72, sx: 0.34, sy: -0.24, ry: -12, op: 0.8 },
+    { el: '.footer', shape: 'rocket', s: 0.4, sx: 0.05, sy: 0.19, op: 0.95, m: { s: 0.36, sx: 0.3, sy: -0.02, op: 0.8 } },
   ];
-  const canvas = document.querySelector('.galaxy');
+  const canvas = document.querySelector('.pixels');
   if (gl && canvas) {
     try {
-      api.galaxy = createGalaxy(canvas, { small, reduce, keys: KEYS });
-      doc.classList.add('has-galaxy');
-      if (!small && !reduce) createGalaxyPanel(api.galaxy, DEFAULTS);
-      // inner pages have no boot screen, so the galaxy forms straight away
-      if (!document.querySelector('.loader')) api.galaxy.intro(2);
+      api.pixels = createPixels(canvas, { small, reduce, keys: KEYS });
+      doc.classList.add('has-pixels');
+      if (!small && !reduce) createPixelsPanel(api.pixels, DEFAULTS);
+      // inner pages have no boot screen, so the pixels assemble straight away
+      if (!document.querySelector('.loader')) api.pixels.intro(1.8);
     } catch (e) { canvas.remove(); }
   }
 
