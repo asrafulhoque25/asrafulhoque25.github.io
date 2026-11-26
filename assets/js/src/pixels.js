@@ -3,7 +3,7 @@
    Thousands of small square pixels sit behind the site. As you
    scroll they rebuild themselves into what a web designer and
    developer makes: a browser window, </>, { }, a laptop and a
-   phone, a git branch, a Shopify bag, a rocket for launch.
+   phone, a project folder, a git branch, a Shopify bag, a rocket for launch.
    ========================================================= */
 import {
   WebGLRenderer, Scene, PerspectiveCamera, BufferGeometry, BufferAttribute,
@@ -65,6 +65,23 @@ export const SHAPES = {
     line(c, [[46, 84], [124, 84]]); line(c, [[46, 104], [156, 104]]); line(c, [[46, 124], [108, 124]]);
     c.lineWidth = 9; rr(c, 194, 92, 48, 100, 10);
     c.lineWidth = 6; line(c, [[210, 104], [226, 104]]);
+  },
+  // an open project folder with pages peeking out and an "open" arrow: the project index
+  folder(c) {
+    c.lineWidth = 9;
+    // back of the folder with its tab
+    c.beginPath(); c.moveTo(28, 112); c.lineTo(28, 62); c.arcTo(28, 50, 40, 50, 12); c.lineTo(88, 50); c.lineTo(106, 68);
+    c.lineTo(216, 68); c.arcTo(228, 68, 228, 80, 12); c.lineTo(228, 112); c.stroke();
+    // two pages sticking out
+    c.lineWidth = 7; rr(c, 50, 84, 118, 60, 6); rr(c, 86, 96, 124, 60, 6);
+    // the front flap hides whatever is behind it
+    const flap = () => { c.beginPath(); c.moveTo(16, 116); c.lineTo(240, 116); c.lineTo(226, 214); c.lineTo(30, 214); c.closePath(); };
+    c.save(); c.globalCompositeOperation = 'destination-out'; flap(); c.fill(); c.restore();
+    c.lineWidth = 9; flap(); c.stroke();
+    // open-in-new-tab arrow
+    c.lineWidth = 12;
+    line(c, [[106, 186], [150, 142]]);
+    line(c, [[118, 142], [150, 142], [150, 174]]);
   },
   // a git branch that merges back
   branch(c) {

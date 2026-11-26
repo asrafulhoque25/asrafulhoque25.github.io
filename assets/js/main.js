@@ -232,7 +232,10 @@
       filters.forEach(function (b) { var on = b === btn; b.classList.toggle('is-active', on); b.setAttribute('aria-selected', on); });
       var show = rows.filter(function (r) { return f === 'all' || r.dataset.cat.split(' ').indexOf(f) > -1; });
       rows.forEach(function (r) { r.classList.toggle('is-hidden', show.indexOf(r) === -1); });
-      if (hasGSAP) gsap.fromTo(show, { opacity: 0, y: 24 }, { opacity: 1, y: 0, stagger: .04, duration: .6, ease: 'power3.out', clearProps: 'transform' });
+      // number the rows that are left: [01], [02]...
+      show.forEach(function (r, i) { var n = $('.prow__n', r); if (n) n.textContent = '[' + (i < 9 ? '0' : '') + (i + 1) + ']'; });
+      if (window.__plist) window.__plist.replay(show);
+      else if (hasGSAP) gsap.fromTo(show, { opacity: 0, y: 24 }, { opacity: 1, y: 0, stagger: .04, duration: .6, ease: 'power3.out', clearProps: 'transform' });
       if (hasGSAP) ScrollTrigger.refresh();
     });
   });
@@ -606,78 +609,103 @@
     return function () { gsap.set(fc, { clearProps: 'all' }); };
   });
 
-  /* ---------- project index: hover preview ---------- */
-  var preview = $('.preview');
-  if (preview && finePointer) {
-    var pimg = $('img', preview);
-    var plist = $('.plist');
-    var px = gsap.quickTo(preview, 'x', { duration: .45, ease: 'power3' });
-    var py = gsap.quickTo(preview, 'y', { duration: .45, ease: 'power3' });
-    var mx = -999, my = -999, lastRot = 0, shown = false, curRow = null;
-
-    // Load every preview image in the background once the page is idle,
-    // so hovering a row shows its picture instantly instead of downloading it first.
-    var cache = {};
-    function warm() {
-      $$('.prow').forEach(function (r) {
-        var src = r.dataset.img;
-        if (!src || cache[src]) return;
-        var im = new Image(); im.decoding = 'async'; im.src = src; cache[src] = im;
-        if (im.decode) im.decode().catch(function () {});
+  /* ---------- project index: letters roll into a blue copy, cards slide up ----------
+     Each name is split into word masks and letters. A row is "on" while the
+     pointer is over its name (desktop) or while it crosses the middle of the
+     screen (touch), and the other rows fade back. */
+  var plist = $('[data-plist]');
+  if (plist) {
+    var prows = $$('.prow', plist);
+    var split = !reduce;
+    if (split) {
+      prows.forEach(function (r) {
+        var nm = $('.prow__name', r);
+        var text = nm.textContent.trim(), k = 0;
+        nm.textContent = '';
+        var sr = document.createElement('span');
+        sr.className = 'visually-hidden'; sr.textContent = text;
+        nm.appendChild(sr);
+        text.split(/\s+/).forEach(function (word, wi) {
+          if (wi) { var sp = document.createElement('span'); sp.setAttribute('aria-hidden', 'true'); sp.textContent = ' '; nm.appendChild(sp); }
+          var w = document.createElement('span');
+          w.className = 'w'; w.setAttribute('aria-hidden', 'true');
+          word.split('').forEach(function (ch) {
+            var l = document.createElement('span');
+            l.className = 'l'; l.textContent = ch; l.style.setProperty('--k', k++);
+            w.appendChild(l);
+          });
+          nm.appendChild(w);
+        });
       });
+      plist.classList.add('is-split');
     }
-    if ('requestIdleCallback' in window) requestIdleCallback(warm, { timeout: 3000 }); else setTimeout(warm, 1500);
-    if (plist) plist.addEventListener('mouseenter', warm, { once: true });
 
-    function showFor(row) {
-      var src = row && row.dataset.img;
-      if (!src) { hidePreview(); return; }
-      curRow = row;
-      if (pimg.getAttribute('src') !== src) pimg.src = src;
-      if (!shown) { shown = true; gsap.to(preview, { opacity: 1, scale: 1, duration: .35, ease: 'expo.out', overwrite: 'auto' }); }
+    // letters rise into place, one row after another
+    function enter(r, delay) {
+      r.style.setProperty('--d', Math.round(delay * 1000) + 'ms');
+      r.classList.add('is-in');
+      setTimeout(function () { r.style.removeProperty('--d'); }, delay * 1000 + 1200);
     }
-    function hidePreview() {
-      curRow = null;
-      if (!shown) return;
-      shown = false;
-      gsap.to(preview, { opacity: 0, scale: .6, duration: .35, ease: 'power3.out', overwrite: 'auto' });
+    prows.forEach(function (r) {
+      if (!split) { r.classList.add('is-in'); return; }
+      whenVisible(r, function (d) { enter(r, d * 1.6); }, .96);
+    });
+
+    var onRow = null;
+    // keep the cards on screen when a long name leaves no room after it
+    function fit(r) {
+      r.classList.remove('is-tight');
+      if (window.innerWidth <= 900) return;
+      var a = $('a', r), pk = $('.prow__peek', r);
+      var room = plist.getBoundingClientRect().right - a.getBoundingClientRect().right;
+      if (room < pk.offsetWidth + parseFloat(getComputedStyle(pk).marginLeft) - 4) r.classList.add('is-tight');
     }
-    // Re-check what is under the pointer. Runs on mouse move AND on scroll,
-    // so the preview never stays stuck when the list scrolls away.
-    // Find the row under the pointer by its box, not by hit-testing, so it
-    // still works while hover is paused during scrolling.
-    function rowAt(x, y) {
-      var rows = $$('.prow:not(.is-hidden)');
-      for (var i = 0; i < rows.length; i++) {
-        var r = rows[i].getBoundingClientRect();
-        if (y >= r.top && y < r.bottom && x >= r.left && x <= r.right) return rows[i];
+    function setOn(r) {
+      if (onRow === r) return;
+      if (onRow) onRow.classList.remove('is-on');
+      onRow = r;
+      if (r) { fit(r); r.classList.add('is-on'); }
+      plist.classList.toggle('is-hovering', !!r && finePointer);
+    }
+
+    if (finePointer) {
+      // find the row by its name's box, not by hit-testing, so it stays right
+      // while the page scrolls under a still pointer
+      var mx = -1, my = -1;
+      var rowAt = function (x, y) {
+        for (var i = 0; i < prows.length; i++) {
+          if (prows[i].classList.contains('is-hidden')) continue;
+          var b = $('a', prows[i]).getBoundingClientRect();
+          if (y >= b.top && y < b.bottom && x >= b.left && x <= b.right) return prows[i];
+        }
+        return null;
+      };
+      var check = function () { setOn(mx < 0 ? null : rowAt(mx, my)); };
+      plist.addEventListener('mousemove', function (e) { mx = e.clientX; my = e.clientY; check(); }, { passive: true });
+      plist.addEventListener('mouseleave', function () { mx = -1; setOn(null); });
+      window.addEventListener('scroll', function () { if (mx >= 0) check(); }, { passive: true });
+      window.addEventListener('blur', function () { mx = -1; setOn(null); });
+    } else if ('IntersectionObserver' in window) {
+      // touch screens: the row in the middle of the screen is the active one
+      var io = new IntersectionObserver(function (en) {
+        en.forEach(function (e) { if (e.isIntersecting) setOn(e.target); else if (e.target === onRow) setOn(null); });
+      }, { rootMargin: '-46% 0px -46% 0px' });
+      prows.forEach(function (r) { io.observe(r); });
+    }
+    plist.addEventListener('focusin', function (e) { var r = e.target.closest('.prow'); if (r) setOn(r); });
+    plist.addEventListener('focusout', function () { setOn(null); });
+
+    // used by the filter buttons
+    window.__plist = {
+      replay: function (show) {
+        setOn(null);
+        if (!split) return;
+        show.forEach(function (r) { r.classList.remove('is-in'); });
+        void plist.offsetWidth;
+        show.forEach(function (r, i) { enter(r, Math.min(i, 8) * .06); });
       }
-      return null;
-    }
-    function check() {
-      var row = rowAt(mx, my);
-      if (row) { if (row !== curRow || !shown) showFor(row); }
-      else hidePreview();
-    }
-    window.addEventListener('mousemove', function (e) {
-      mx = e.clientX; my = e.clientY;
-      var dx = mx - (gsap.getProperty(preview, 'x') || 0);
-      px(mx); py(my);
-      var rot = gsap.utils.clamp(-12, 12, dx * .04);
-      if (Math.abs(rot - lastRot) > .5) { gsap.to(preview, { rotation: rot, duration: .5 }); lastRot = rot; }
-      check();
-    }, { passive: true });
-    window.addEventListener('scroll', function () { if (mx > -999) check(); }, { passive: true });
-    if (plist) plist.addEventListener('mouseleave', hidePreview);
-    document.addEventListener('mouseleave', hidePreview);
-    window.addEventListener('blur', hidePreview);
-    ScrollTrigger.create({ trigger: '.index', start: 'top bottom', end: 'bottom top', onLeave: hidePreview, onLeaveBack: hidePreview });
-    $$('.filter').forEach(function (b) { b.addEventListener('click', hidePreview); });
+    };
   }
-  $$('.prow').forEach(function (r) {
-    gsap.set(r, { y: 30, opacity: 0 });
-    whenVisible(r, function (d) { gsap.to(r, { y: 0, opacity: 1, delay: d * 1.5, duration: 1.1, ease: 'power3.out', clearProps: 'transform,opacity' }); }, .94);
-  });
 
   /* ---------- timeline line draw ---------- */
   $$('.timeline').forEach(function (t) {

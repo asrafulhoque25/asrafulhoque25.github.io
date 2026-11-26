@@ -34,7 +34,7 @@ import { createHeroName } from './hero-name.js';
     { el: '#services', shape: 'braces', s: 0.65, sx: 0.4, sy: -0.06, ry: -16, op: 0.45 },
     { el: '.toss', shape: 'grid', s: 1, sx: 0, sy: 0.05, rx: -58, op: 0.55, wave: 0.25 },
     { el: '#work', shape: 'devices', s: 0.7, sx: 0.34, sy: -0.27, ry: -12, op: 0.7 },
-    { el: '#index', shape: 'devices', s: 0.72, sx: 0.41, sy: 0.12, ry: -16, op: 0.45 },
+    { el: '#index', shape: 'folder', s: 0.64, sx: 0.35, sy: 0.04, ry: -14, op: 0.5, m: { s: 0.34, sx: 0.3, sy: -0.36, op: 0.3 } },
     { el: '#process', shape: 'branch', s: 0.8, sx: 0.32, sy: -0.3, ry: -10, op: 0.9 },
     { el: '#experience', shape: 'terminal', s: 0.7, sx: 0.34, sy: -0.28, ry: -14, op: 0.5 },
     { el: '#pricing', shape: 'bag', s: 0.72, sx: 0.35, sy: -0.24, ry: -12, op: 0.8 },
