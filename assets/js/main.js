@@ -287,6 +287,7 @@
 
   /* ---------- no-GSAP fallback ---------- */
   if (!animate) {
+    window.__ahIntroDone = true;
     var ld = $('.loader'); if (ld) ld.style.display = 'none';
     body.classList.remove('is-loading');
     onScene(function (s) { if (s.pixels) s.pixels.showNow(); });
@@ -307,43 +308,6 @@
   // Parallax hero: name rises, portrait lifts in, tiles pop out from behind
   var heroChars = $$('.px__word');
 
-  /* ---------- hero name: every letter reacts on its own ----------
-     Hover (or tap) a letter: it squashes and springs back, turns cobalt for a
-     moment, and the pixel layer behind it throws out a small burst. */
-  heroChars.forEach(function (w) {
-    var txt = w.textContent;
-    w.textContent = '';
-    txt.split('').forEach(function (ch) {
-      var l = document.createElement('span');
-      l.className = 'px__l'; l.textContent = ch; l.setAttribute('data-l', ch);
-      w.appendChild(l);
-    });
-    w.classList.add('is-split');
-  });
-  (function () {
-    var last = new WeakMap();
-    function hit(l, e) {
-      var now = performance.now();
-      if (now - (last.get(l) || 0) < 380) return;
-      last.set(l, now);
-      l.classList.add('is-hot');
-      clearTimeout(l._hot);
-      l._hot = setTimeout(function () { l.classList.remove('is-hot'); }, 650);
-      if (!reduce && window.gsap) {
-        gsap.killTweensOf(l);
-        gsap.timeline()
-          .to(l, { scaleX: 1.16, scaleY: .8, duration: .12, ease: 'power2.out' })
-          .to(l, { scaleX: .92, scaleY: 1.12, y: '-4%', duration: .14, ease: 'power2.out' })
-          .to(l, { scaleX: 1, scaleY: 1, y: 0, duration: 1, ease: 'elastic.out(1, .32)' });
-      }
-      var s = window.ahScene && window.ahScene.pixels;
-      if (s && s.burst && !reduce) s.burst(l.getBoundingClientRect(), e && e.clientX != null ? { x: e.clientX, y: e.clientY } : null);
-    }
-    $$('.px__l').forEach(function (l) {
-      l.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') hit(l, e); });
-      l.addEventListener('pointerdown', function (e) { hit(l, e); });
-    });
-  })();
   gsap.set(heroChars, { yPercent: 60, opacity: 0 });
   gsap.set('.px__portrait img', { yPercent: 30, opacity: 0 });
   gsap.set('.ptile', { opacity: 0 });
@@ -416,6 +380,8 @@
     if (!repeat) out.innerHTML += '\n<span class="ok">&#10003; ready</span> in ' + secs + 's <span class="dim">&middot; shipping since 2018</span>';
     var tl = gsap.timeline({
       onComplete: function () {
+        window.__ahIntroDone = true;
+        window.dispatchEvent(new Event('ah:intro-done'));
         body.classList.remove('is-loading');
         if (lenis) lenis.start();
         loader.remove();
