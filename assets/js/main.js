@@ -33,28 +33,54 @@
     else window.addEventListener('ah:scene-ready', function () { fn(window.ahScene); }, { once: true });
   }
 
-  /* ---------- gallery on phones: cards turn in 3D as you swipe ---------- */
-  function coverflow() {
+  /* ---------- gallery on phones: a card slider with arrows, counter and caption ---------- */
+  function memSlider() {
     var list = $('.mem--flat .mem__list');
-    if (!list || reduce) return;
+    if (!list) return;
     var items = $$('.mem__item', list);
-    var q = false;
+    var pos = $('.mem__pos b'), alt = $('.mem__alt'), bar = $('.mem__track i');
+    var prev = $('[data-mem-go="-1"]'), next = $('[data-mem-go="1"]');
+    var cur = -1, q = false;
     function update() {
       q = false;
-      var r = list.getBoundingClientRect(), mid = r.left + r.width / 2;
-      items.forEach(function (it) {
+      var r = list.getBoundingClientRect(), mid = r.left + r.width / 2, best = 0, bestD = 1e9;
+      items.forEach(function (it, i) {
         var b = it.getBoundingClientRect();
-        var d = Math.max(-1.6, Math.min(1.6, (b.left + b.width / 2 - mid) / b.width));
-        it.style.setProperty('--ry', (d * -32).toFixed(2) + 'deg');
-        it.style.setProperty('--s', (1 - Math.min(1, Math.abs(d)) * .12).toFixed(3));
-        it.style.setProperty('--g', Math.min(1, Math.abs(d)).toFixed(2));
+        var d = (b.left + b.width / 2 - mid) / b.width;
+        if (Math.abs(d) < bestD) { bestD = Math.abs(d); best = i; }
+        if (!reduce) {
+          var a = Math.min(1, Math.abs(d));
+          it.style.setProperty('--s', (1 - a * .08).toFixed(3));
+          it.style.setProperty('--o', (1 - a * .5).toFixed(3));
+        }
       });
+      if (best !== cur) {
+        cur = best;
+        items.forEach(function (it, i) { it.classList.toggle('is-on', i === cur); });
+        if (pos) pos.textContent = cur + 1;
+        if (alt) alt.textContent = $('img', items[cur]).alt;
+        if (prev) prev.disabled = cur === 0;
+        if (next) next.disabled = cur === items.length - 1;
+      }
+      if (bar) bar.style.transform = 'scaleX(' + ((cur + 1) / items.length).toFixed(3) + ')';
     }
+    function go(step) {
+      var t = items[Math.max(0, Math.min(items.length - 1, cur + step))];
+      list.scrollTo({ left: t.offsetLeft - (list.clientWidth - t.offsetWidth) / 2, behavior: reduce ? 'auto' : 'smooth' });
+    }
+    if (prev) prev.addEventListener('click', function () { go(-1); });
+    if (next) next.addEventListener('click', function () { go(1); });
+    list.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+    });
+    list.setAttribute('tabindex', '0');
+    list.setAttribute('aria-label', 'Photos, use the arrow keys or swipe');
     list.addEventListener('scroll', function () { if (!q) { q = true; requestAnimationFrame(update); } }, { passive: true });
     window.addEventListener('resize', update);
     update();
   }
-  onScene(coverflow);
+  onScene(memSlider);
 
   /* ---------- text that decodes like code being typed ---------- */
   var GLYPHS = '<>/{}[]=;_#*';
@@ -280,6 +306,44 @@
 
   // Parallax hero: name rises, portrait lifts in, tiles pop out from behind
   var heroChars = $$('.px__word');
+
+  /* ---------- hero name: every letter reacts on its own ----------
+     Hover (or tap) a letter: it squashes and springs back, turns cobalt for a
+     moment, and the pixel layer behind it throws out a small burst. */
+  heroChars.forEach(function (w) {
+    var txt = w.textContent;
+    w.textContent = '';
+    txt.split('').forEach(function (ch) {
+      var l = document.createElement('span');
+      l.className = 'px__l'; l.textContent = ch; l.setAttribute('data-l', ch);
+      w.appendChild(l);
+    });
+    w.classList.add('is-split');
+  });
+  (function () {
+    var last = new WeakMap();
+    function hit(l, e) {
+      var now = performance.now();
+      if (now - (last.get(l) || 0) < 380) return;
+      last.set(l, now);
+      l.classList.add('is-hot');
+      clearTimeout(l._hot);
+      l._hot = setTimeout(function () { l.classList.remove('is-hot'); }, 650);
+      if (!reduce && window.gsap) {
+        gsap.killTweensOf(l);
+        gsap.timeline()
+          .to(l, { scaleX: 1.16, scaleY: .8, duration: .12, ease: 'power2.out' })
+          .to(l, { scaleX: .92, scaleY: 1.12, y: '-4%', duration: .14, ease: 'power2.out' })
+          .to(l, { scaleX: 1, scaleY: 1, y: 0, duration: 1, ease: 'elastic.out(1, .32)' });
+      }
+      var s = window.ahScene && window.ahScene.pixels;
+      if (s && s.burst && !reduce) s.burst(l.getBoundingClientRect(), e && e.clientX != null ? { x: e.clientX, y: e.clientY } : null);
+    }
+    $$('.px__l').forEach(function (l) {
+      l.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') hit(l, e); });
+      l.addEventListener('pointerdown', function (e) { hit(l, e); });
+    });
+  })();
   gsap.set(heroChars, { yPercent: 60, opacity: 0 });
   gsap.set('.px__portrait img', { yPercent: 30, opacity: 0 });
   gsap.set('.ptile', { opacity: 0 });

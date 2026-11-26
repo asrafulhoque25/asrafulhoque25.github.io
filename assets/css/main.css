@@ -601,7 +601,25 @@ html.is-scrolling body { pointer-events: none; }
   animation: name-flow 6s ease-in-out infinite alternate;
 }
 @keyframes name-flow { from { background-position: 50% 0%; } to { background-position: 50% 100%; } }
-@media (prefers-reduced-motion: reduce) { .px__word { animation: none; background-position: 50% 30%; } }
+/* once split into letters, each letter carries the same vertical gradient, so it stays seamless */
+.px__word.is-split { background: none; animation: none; -webkit-text-fill-color: currentColor; color: inherit; }
+.px__l {
+  position: relative; display: inline-block; transform-origin: 50% 88%; will-change: transform;
+  background: linear-gradient(180deg, #f6f3ec 0%, #dfe5ff 22%, #8ea2ff 48%, #dfe5ff 74%, #f6f3ec 100%);
+  background-size: 100% 260%; background-position: 50% 0%;
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+  animation: name-flow 6s ease-in-out infinite alternate;
+}
+/* hovered letter: a cobalt copy fades in on top, with a soft glow */
+.px__l::after {
+  content: attr(data-l); position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, #ffffff 0%, #b9c6ff 26%, #4d6bff 62%, #2c3fd0 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+  opacity: 0; transition: opacity .9s ease;
+}
+.px__l.is-hot::after { opacity: 1; transition-duration: .08s; }
+.px__l.is-hot { filter: drop-shadow(0 0 22px rgba(77, 107, 255, .55)); }
+@media (prefers-reduced-motion: reduce) { .px__word, .px__l { animation: none; background-position: 50% 30%; } }
 .px__echoes { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .px__echo { color: transparent; -webkit-text-stroke: 1.5px rgba(77, 107, 255, .8); opacity: 0; }
 
@@ -1127,13 +1145,27 @@ html:not(.js) .loader { display: none; }
 .mem__hint code { font-family: var(--f-code); color: var(--accent-2); }
 .gl3d .mem:not(.mem--flat) .mem__list { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-/* phones and no-WebGL: a swipeable 3D card row */
-.mem__list { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; perspective: 900px;
-  padding: 8px max(var(--gutter), calc(50% - min(38vw, 180px))) clamp(56px, 6.5vw, 104px); }
+/* phones and no-WebGL: a clear card slider with arrows, counter and caption */
+.mem__list { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain;
+  padding: 6px calc((100% - min(80vw, 380px)) / 2) 18px; }
 .mem__list::-webkit-scrollbar { display: none; }
-.mem__item { flex: 0 0 min(76vw, 360px); scroll-snap-align: center; transform: rotateY(var(--ry, 0deg)) scale(var(--s, 1)); transform-style: preserve-3d; }
-.mem__item figure { aspect-ratio: 5 / 4; border-radius: 18px; overflow: hidden; background: var(--ink-3); box-shadow: 0 24px 50px rgba(0, 0, 0, .35); }
-.mem__item img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(var(--g, 0)) brightness(calc(1 - var(--g, 0) * .35)); }
+.mem__item { flex: 0 0 min(80vw, 380px); scroll-snap-align: center; transform: scale(var(--s, 1)); opacity: var(--o, 1); transition: transform .25s ease, opacity .25s ease; }
+.mem__item figure { margin: 0; aspect-ratio: 5 / 4; border-radius: 18px; overflow: hidden; background: var(--ink-3); box-shadow: 0 22px 44px rgba(0, 0, 0, .35); border: 1px solid var(--line); }
+.mem__item.is-on figure { border-color: rgba(77, 107, 255, .7); }
+.mem__item img { width: 100%; height: 100%; object-fit: cover; }
+.mem__ctrl { display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; gap: 12px; width: min(100% - 2 * var(--gutter), 460px); margin: 0 auto; padding-bottom: clamp(56px, 6.5vw, 104px); }
+.mem__btn { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--line-2); color: var(--bone); background: rgba(255, 255, 255, .03); transition: background .25s, border-color .25s, opacity .25s; }
+.mem__btn .i { width: 20px; height: 20px; }
+.mem__btn:hover, .mem__btn:focus-visible { background: var(--accent); border-color: var(--accent); }
+.mem__btn:disabled { opacity: .3; pointer-events: none; }
+.mem__meta { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; min-width: 0; }
+.mem__pos { font-family: var(--f-code); font-size: 12.5px; color: var(--mute); }
+.mem__pos b { color: var(--bone); font-weight: 500; }
+.mem__alt { font-size: 14px; color: var(--bone-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.mem__track { grid-column: 1 / -1; position: relative; height: 2px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.mem__track i { position: absolute; inset: 0; background: var(--accent); transform-origin: 0 50%; transform: scaleX(.1); transition: transform .3s ease; }
+.gl3d .mem:not(.mem--flat) .mem__ctrl { display: none; }
+html:not(.js) .mem__ctrl { display: none; }
 
 /* ---------- pixels.config.js panel ---------- */
 .gx { position: fixed; left: 16px; bottom: 16px; z-index: 120; font-family: var(--f-code); opacity: 0; transform: translateY(10px); pointer-events: none; transition: opacity .4s, transform .5s var(--ease); }
@@ -1184,6 +1216,9 @@ div.gx__line code { grid-column: 2 / 4; }
 /* ---------- footer credit ---------- */
 .footer__made code { font-family: var(--f-code); color: var(--accent); margin-right: 4px; }
 .gl3d .mem:not(.mem--flat) .gallery__note { max-width: 400px; }
+.gallery__head .hand-note { margin-top: clamp(18px, 1.8vw, 26px); }
+.gl3d .mem:not(.mem--flat) .gallery__head { display: flex; gap: clamp(26px, 2.6vw, 38px); }
+.mem--flat .gallery__head .gallery__note, html:not(.gl3d) .gallery__note { margin-top: 18px; }
 .gitlog { background: rgba(10, 12, 18, .72); }
 @media (max-width: 600px) { .hero__time { display: none; } }
 /* glass cards: the pixels behind them soften instead of crossing the text */
