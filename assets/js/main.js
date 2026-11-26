@@ -515,12 +515,13 @@
   /* ---------- page theme: white while a light section fills the middle of the screen ---------- */
   var lightSecs = $$('[data-theme="light"]');
   function themeCheck() {
-    var mid = window.innerHeight * .5, light = false;
+    var mid = window.innerHeight * .5, light = false, white = false;
     for (var i = 0; i < lightSecs.length; i++) {
       var r = lightSecs[i].getBoundingClientRect();
-      if (r.top < mid && r.bottom > mid) { light = true; break; }
+      if (r.top < mid && r.bottom > mid) { light = true; white = lightSecs[i].dataset.tone === 'white'; break; }
     }
     if (light !== doc.classList.contains('is-light')) doc.classList.toggle('is-light', light);
+    if (white !== doc.classList.contains('is-white')) doc.classList.toggle('is-white', white);
   }
 
   /* ---------- about statement: words go from blurred, bold and blue to sharp as you scroll ---------- */
@@ -609,10 +610,10 @@
     return function () { gsap.set(fc, { clearProps: 'all' }); };
   });
 
-  /* ---------- project index: letters roll into a blue copy, cards slide up ----------
+  /* ---------- project index: letters roll into the project's colour, cards slide up ----------
      Each name is split into word masks and letters. A row is "on" while the
-     pointer is over its name (desktop) or while it crosses the middle of the
-     screen (touch), and the other rows fade back. */
+     pointer is over it (desktop) or while it crosses the middle of the screen
+     (touch). A soft bar in the row's colour glides to the active row. */
   var plist = $('[data-plist]');
   if (plist) {
     var prows = $$('.prow', plist);
@@ -652,39 +653,62 @@
     });
 
     var onRow = null;
+    var bar = document.createElement('li');
+    bar.className = 'plist__bar'; bar.setAttribute('aria-hidden', 'true');
+    plist.insertBefore(bar, plist.firstChild);
     // keep the cards on screen when a long name leaves no room after it
     function fit(r) {
       r.classList.remove('is-tight');
       if (window.innerWidth <= 900) return;
-      var a = $('a', r), pk = $('.prow__peek', r);
-      var room = plist.getBoundingClientRect().right - a.getBoundingClientRect().right;
+      var inner = $('.prow__in', r), pk = $('.prow__peek', r);
+      var room = plist.getBoundingClientRect().right - inner.getBoundingClientRect().right;
       if (room < pk.offsetWidth + parseFloat(getComputedStyle(pk).marginLeft) - 4) r.classList.add('is-tight');
+    }
+    function moveBar(r) {
+      if (!r) { bar.classList.remove('is-on'); return; }
+      var first = !bar.classList.contains('is-on');
+      // the first time it appears it fades in where it is instead of sliding from the top
+      if (first) bar.style.transition = 'opacity .35s';
+      bar.style.setProperty('--c', r.style.getPropertyValue('--c'));
+      bar.style.transform = 'translateY(' + r.offsetTop + 'px)';
+      bar.style.height = r.offsetHeight + 'px';
+      if (first) { void bar.offsetWidth; bar.style.transition = ''; }
+      bar.classList.add('is-on');
     }
     function setOn(r) {
       if (onRow === r) return;
       if (onRow) onRow.classList.remove('is-on');
       onRow = r;
       if (r) { fit(r); r.classList.add('is-on'); }
-      plist.classList.toggle('is-hovering', !!r && finePointer);
+      moveBar(r);
     }
 
     if (finePointer) {
-      // find the row by its name's box, not by hit-testing, so it stays right
-      // while the page scrolls under a still pointer
-      var mx = -1, my = -1;
-      var rowAt = function (x, y) {
+      // Track the pointer over the whole page, and check again on every scroll
+      // frame, so a row lights up as soon as it slides under a still mouse.
+      var mx = -1, my = -1, ticking = false;
+      var check = function () {
+        ticking = false;
+        if (mx < 0) { setOn(null); return; }
+        var lb = plist.getBoundingClientRect();
+        if (my < lb.top || my >= lb.bottom || mx < lb.left - 40 || mx > lb.right + 40) { setOn(null); return; }
         for (var i = 0; i < prows.length; i++) {
           if (prows[i].classList.contains('is-hidden')) continue;
-          var b = $('a', prows[i]).getBoundingClientRect();
-          if (y >= b.top && y < b.bottom && x >= b.left && x <= b.right) return prows[i];
+          var b = prows[i].getBoundingClientRect();
+          if (my >= b.top && my < b.bottom) { setOn(prows[i]); return; }
         }
-        return null;
+        setOn(null);
       };
-      var check = function () { setOn(mx < 0 ? null : rowAt(mx, my)); };
-      plist.addEventListener('mousemove', function (e) { mx = e.clientX; my = e.clientY; check(); }, { passive: true });
-      plist.addEventListener('mouseleave', function () { mx = -1; setOn(null); });
-      window.addEventListener('scroll', function () { if (mx >= 0) check(); }, { passive: true });
-      window.addEventListener('blur', function () { mx = -1; setOn(null); });
+      var queue = function () { if (!ticking) { ticking = true; requestAnimationFrame(check); } };
+      window.addEventListener('pointermove', function (e) {
+        if (e.pointerType && e.pointerType !== 'mouse') return;
+        mx = e.clientX; my = e.clientY; queue();
+      }, { passive: true });
+      window.addEventListener('scroll', queue, { passive: true });
+      if (lenis) lenis.on('scroll', queue);
+      document.addEventListener('mouseleave', function () { mx = -1; queue(); });
+      window.addEventListener('blur', function () { mx = -1; queue(); });
+      window.addEventListener('resize', function () { if (onRow) moveBar(onRow); });
     } else if ('IntersectionObserver' in window) {
       // touch screens: the row in the middle of the screen is the active one
       var io = new IntersectionObserver(function (en) {
