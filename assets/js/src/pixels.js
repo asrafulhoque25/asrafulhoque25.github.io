@@ -6,7 +6,7 @@
    phone, a git branch, a Shopify bag, a rocket for launch.
    ========================================================= */
 import {
-  WebGLRenderer, Scene, PerspectiveCamera, OrthographicCamera, BufferGeometry, BufferAttribute,
+  WebGLRenderer, Scene, PerspectiveCamera, BufferGeometry, BufferAttribute,
   Points, ShaderMaterial, AdditiveBlending, NormalBlending, Color, Group, ColorManagement
 } from 'three';
 
@@ -442,99 +442,6 @@ export function createPixels(canvas, opts = {}) {
     renderer.render(scene, camera);
   }
 
-  /* ---------- bursts: small square pixels thrown out from a point on screen ---------- */
-  const SPARKS = 700;
-  const sPos = new Float32Array(SPARKS * 3), sCol = new Float32Array(SPARKS * 3), sLife = new Float32Array(SPARKS), sSize = new Float32Array(SPARKS);
-  const sVel = new Float32Array(SPARKS * 2), sTtl = new Float32Array(SPARKS);
-  const sGeo = new BufferGeometry();
-  const sPosA = new BufferAttribute(sPos, 3), sLifeA = new BufferAttribute(sLife, 1);
-  sGeo.setAttribute('position', sPosA);
-  sGeo.setAttribute('aCol', new BufferAttribute(sCol, 3));
-  sGeo.setAttribute('aLife', sLifeA);
-  sGeo.setAttribute('aSize', new BufferAttribute(sSize, 1));
-  const sMat = new ShaderMaterial({
-    transparent: true, depthWrite: false, depthTest: false, blending: AdditiveBlending,
-    uniforms: { uPR: { value: pr } },
-    vertexShader: `
-      uniform float uPR;
-      attribute vec3 aCol;
-      attribute float aLife;
-      attribute float aSize;
-      varying vec3 vCol;
-      varying float vA;
-      void main() {
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = aSize * uPR * (0.4 + 0.6 * aLife);
-        vCol = aCol;
-        vA = aLife > 0.0 ? smoothstep(0.0, 0.35, aLife) : 0.0;
-      }`,
-    fragmentShader: `
-      varying vec3 vCol;
-      varying float vA;
-      void main() {
-        vec2 q = abs(gl_PointCoord - 0.5);
-        float s = 1.0 - smoothstep(0.38, 0.5, max(q.x, q.y));
-        if (s * vA < 0.02) discard;
-        gl_FragColor = vec4(vCol, s * vA);
-      }`,
-  });
-  const sparks = new Points(sGeo, sMat);
-  sparks.frustumCulled = false;
-  const sScene = new Scene();
-  sScene.add(sparks);
-  const sCam = new OrthographicCamera(0, 1, 0, 1, -10, 10);
-  const SPARK_COLORS = [[0.30, 0.42, 1.0], [0.56, 0.64, 1.0], [0.96, 0.95, 0.93], [1.0, 0.85, 0.30]];
-  let sNext = 0, sAlive = 0;
-  function burst(rect, at) {
-    if (reduce) return;
-    const n = 60;
-    const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
-    for (let k = 0; k < n; k++) {
-      const i = sNext; sNext = (sNext + 1) % SPARKS;
-      // start on the letter's outline, mostly its upper half, and fly outwards
-      const side = Math.random();
-      let x, y;
-      if (side < 0.5) { x = rect.left + Math.random() * rect.width; y = rect.top + Math.random() * rect.height * 0.45; }
-      else { x = side < 0.75 ? rect.left : rect.right; y = rect.top + Math.random() * rect.height * 0.8; }
-      const dx = x - (at ? at.x : cx), dy = y - (at ? at.y : cy);
-      const d = Math.hypot(dx, dy) || 1;
-      const sp = 140 + Math.random() * 360;
-      sVel[i * 2] = dx / d * sp + (Math.random() - 0.5) * 120;
-      sVel[i * 2 + 1] = dy / d * sp - 160 - Math.random() * 140;
-      sPos[i * 3] = x; sPos[i * 3 + 1] = y; sPos[i * 3 + 2] = 0;
-      const c = SPARK_COLORS[Math.random() < 0.12 ? 3 : (Math.random() * 3) | 0];
-      sCol[i * 3] = c[0]; sCol[i * 3 + 1] = c[1]; sCol[i * 3 + 2] = c[2];
-      sTtl[i] = 0.7 + Math.random() * 0.7;
-      sLife[i] = 1;
-      sSize[i] = 3.5 + Math.random() * 4.5;
-    }
-    sGeo.attributes.aCol.needsUpdate = true;
-    sGeo.attributes.aSize.needsUpdate = true;
-    sAlive = SPARKS;
-  }
-  function stepSparks(dt) {
-    if (!sAlive) return false;
-    let alive = 0;
-    for (let i = 0; i < SPARKS; i++) {
-      if (sLife[i] <= 0) continue;
-      sVel[i * 2] *= 0.985;
-      sVel[i * 2 + 1] += 620 * dt;
-      sPos[i * 3] += sVel[i * 2] * dt;
-      sPos[i * 3 + 1] += sVel[i * 2 + 1] * dt;
-      sLife[i] = Math.max(0, sLife[i] - dt / sTtl[i]);
-      if (sLife[i] > 0) alive++;
-    }
-    sPosA.needsUpdate = true; sLifeA.needsUpdate = true;
-    sAlive = alive;
-    return true;
-  }
-  function drawSparks() {
-    sCam.right = W; sCam.bottom = H; sCam.updateProjectionMatrix();
-    renderer.autoClear = false;
-    renderer.render(sScene, sCam);
-    renderer.autoClear = true;
-  }
-
   /* ---------- loop ---------- */
   let last = performance.now(), running = false, raf = 0, slow = 0, frames = 0, degraded = false;
   function frame(now) {
@@ -549,7 +456,6 @@ export function createPixels(canvas, opts = {}) {
     // wall-clock time, so a slow first frame never stretches the intro
     if (introOn) { introT = Math.min(1, (now - introStart) / 1000 / introDur); if (introT >= 1) introOn = false; }
     render();
-    if (stepSparks(dt)) drawSparks();
     if (!degraded) {
       frames++;
       if (dt > 0.03) slow++;
@@ -557,7 +463,6 @@ export function createPixels(canvas, opts = {}) {
         if (slow > 50) {
           degraded = true; pr = 1; renderer.setPixelRatio(1); resize();
           mats.forEach((m) => { m.uniforms.uPR.value = 1; });
-          sMat.uniforms.uPR.value = 1;
           glow.geometry.setDrawRange(0, Math.round(N * 0.6));
         }
         frames = 0; slow = 0;
@@ -585,7 +490,6 @@ export function createPixels(canvas, opts = {}) {
     params,
     intro(seconds) { if (reduce) return; introT = 0; introDur = seconds || 2; introStart = performance.now(); introOn = true; },
     showNow() { introT = 1; introOn = false; },
-    burst,
     set(next) {
       let rebuild = false;
       for (const k in next) {

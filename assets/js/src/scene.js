@@ -7,6 +7,7 @@
 import { createPixels, DEFAULTS } from './pixels.js';
 import { createPixelsPanel } from './pixels-panel.js';
 import { createMemories } from './memories.js';
+import { createHeroName } from './hero-name.js';
 
 (function () {
   const doc = document.documentElement;
@@ -93,6 +94,20 @@ import { createMemories } from './memories.js';
       } catch (e) { api.memories = null; }
     }
     mem.classList.add(api.memories ? 'mem--3d' : 'mem--flat');
+  }
+
+  /* ---------- hero name: grid distortion on hover ---------- */
+  const h1 = document.querySelector('.px__title');
+  if (gl && h1 && !reduce) {
+    try {
+      createHeroName(h1).then((n) => {
+        if (!n) return;
+        api.heroName = n;
+        // take over from the HTML heading once its intro has played
+        if (window.__ahIntroDone || !document.querySelector('.loader')) n.show();
+        else window.addEventListener('ah:intro-done', () => n.show(), { once: true });
+      }).catch(() => {});
+    } catch (e) { /* the HTML heading stays */ }
   }
 
   api.ready = true;

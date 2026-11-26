@@ -601,25 +601,10 @@ html.is-scrolling body { pointer-events: none; }
   animation: name-flow 6s ease-in-out infinite alternate;
 }
 @keyframes name-flow { from { background-position: 50% 0%; } to { background-position: 50% 100%; } }
-/* once split into letters, each letter carries the same vertical gradient, so it stays seamless */
-.px__word.is-split { background: none; animation: none; -webkit-text-fill-color: currentColor; color: inherit; }
-.px__l {
-  position: relative; display: inline-block; transform-origin: 50% 88%; will-change: transform;
-  background: linear-gradient(180deg, #f6f3ec 0%, #dfe5ff 22%, #8ea2ff 48%, #dfe5ff 74%, #f6f3ec 100%);
-  background-size: 100% 260%; background-position: 50% 0%;
-  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
-  animation: name-flow 6s ease-in-out infinite alternate;
-}
-/* hovered letter: a cobalt copy fades in on top, with a soft glow */
-.px__l::after {
-  content: attr(data-l); position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(180deg, #ffffff 0%, #b9c6ff 26%, #4d6bff 62%, #2c3fd0 100%);
-  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
-  opacity: 0; transition: opacity .9s ease;
-}
-.px__l.is-hot::after { opacity: 1; transition-duration: .08s; }
-.px__l.is-hot { filter: drop-shadow(0 0 22px rgba(77, 107, 255, .55)); }
-@media (prefers-reduced-motion: reduce) { .px__word, .px__l { animation: none; background-position: 50% 30%; } }
+@media (prefers-reduced-motion: reduce) { .px__word { animation: none; background-position: 50% 30%; } }
+/* WebGL copy of the name (grid distortion on hover) sits over the HTML letters */
+.px__gl { position: absolute; left: 0; width: 100%; z-index: 1; display: block; pointer-events: none; }
+.px__title.has-gl .px__word { background-image: none; }
 .px__echoes { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .px__echo { color: transparent; -webkit-text-stroke: 1.5px rgba(77, 107, 255, .8); opacity: 0; }
 
