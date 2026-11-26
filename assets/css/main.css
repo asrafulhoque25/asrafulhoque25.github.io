@@ -1175,7 +1175,18 @@ div.gx__line code { grid-column: 2 / 4; }
 .gitlog { background: rgba(10, 12, 18, .72); }
 @media (max-width: 600px) { .hero__time { display: none; } }
 /* glass cards: the pixels behind them soften instead of crossing the text */
-.has-pixels .svc, .has-pixels .tk__card { background-color: color-mix(in srgb, var(--ink) 74%, transparent); backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px); }
+.has-pixels .svc, .has-pixels .tk__card, .has-pixels .plan:not(.plan--hot) { background-color: color-mix(in srgb, var(--ink) 74%, transparent); backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px); }
+
+/* Heading block beside the filters: same spacing as the other section headings */
+.section__head--row > div:first-child { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+
+/* The git log card stays a dark terminal in both themes, so its text stays light */
+.gitlog {
+  --ink: #0a0a0a; --bone: #f4f2ee; --bone-2: #c9c7c2; --mute: #8a8884;
+  --line: rgba(244, 242, 238, .12); --line-2: rgba(244, 242, 238, .22);
+  color: var(--bone);
+}
+html.is-light .gitlog { background: rgba(14, 16, 22, .9); }
 
 /* Pure white while the project index fills the screen */
 html.is-light.is-white { --ink: #ffffff; --ink-2: #f5f5f7; --ink-3: #ececf0; --grid: rgba(11, 11, 11, .07); }
