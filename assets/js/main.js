@@ -339,48 +339,50 @@
   window.addEventListener('resize', queueCheck);
 
   /* ---------- preloader: a short terminal boot ----------
-     First visit: about 1.3s of "npm run" output while the pixels, fonts and
-     portrait load. Later visits in the same tab skip straight to the intro. */
+     Every visit plays the whole boot, line by line: the command is typed,
+     two build steps finish, the counter reaches 100 and "ready" prints. Only
+     then, and only once the portrait, fonts and pixels have loaded, does the
+     terminal close and the site come in. */
   var loader = $('.loader');
   var out = $('.term__out');
   var num = $('.loader__num');
   var counter = { v: 0 };
   var t0 = performance.now();
-  var repeat = false;
-  try { repeat = sessionStorage.getItem('ah-booted') === '1'; sessionStorage.setItem('ah-booted', '1'); } catch (e) {}
+  try { sessionStorage.removeItem('ah-booted'); } catch (e) {}
   var imgReady = new Promise(function (res) {
     var im = $('.px__portrait img');
     if (!im || im.complete) return res();
     im.addEventListener('load', res); im.addEventListener('error', res);
-    setTimeout(res, 2500);
+    setTimeout(res, 4000);
   });
   var fontsReady = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
-  var sceneReady = new Promise(function (res) { onScene(res); setTimeout(res, 2400); });
+  var sceneReady = new Promise(function (res) { onScene(res); setTimeout(res, 4000); });
 
-  var bootTl = gsap.timeline();
   var typed = { n: 0 };
   var CMD = 'npm run portfolio';
   var PROMPT = '<span class="p">~/asraful</span> <span class="hl">$</span> ';
-  function lines(extra) {
-    return PROMPT + CMD.slice(0, Math.round(typed.n)) + (extra || '');
-  }
-  if (!repeat) {
-    bootTl
-      .to(typed, { n: CMD.length, duration: .5, ease: 'none', onUpdate: function () { out.innerHTML = lines(); } })
-      .add(function () { out.innerHTML = lines('\n<span class="dim">&gt; compiling</span> figma &rarr; html <span class="dim">..........</span> <span class="ok">done</span>'); }, '+=.12')
-      .add(function () { out.innerHTML = lines('\n<span class="dim">&gt; compiling</span> figma &rarr; html <span class="dim">..........</span> <span class="ok">done</span>\n<span class="dim">&gt; mounting</span> &lt;AsrafulHoque /&gt; <span class="dim">.......</span> <span class="ok">done</span>'); }, '+=.22')
-      .to(counter, { v: 100, duration: 1.05, ease: 'power2.inOut', onUpdate: function () { num.textContent = Math.round(counter.v); } }, 0)
-      .to('.loader__bar', { scaleX: 1, duration: 1.05, ease: 'power2.inOut' }, 0);
-  } else {
-    out.innerHTML = PROMPT + CMD;
-    num.textContent = '100'; gsap.set('.loader__bar', { scaleX: 1 });
-  }
+  var STEP1 = '\n<span class="dim">&gt; compiling</span> figma &rarr; html <span class="dim">..........</span> <span class="ok">done</span>';
+  var STEP2 = '\n<span class="dim">&gt; mounting</span> &lt;AsrafulHoque /&gt; <span class="dim">.......</span> <span class="ok">done</span>';
+  var shown = '';
+  function draw() { out.innerHTML = PROMPT + CMD.slice(0, Math.round(typed.n)) + shown; }
+  // Each step waits for the one before it; the counter and bar end with the last step.
+  var bootTl = gsap.timeline({ paused: true });
+  bootTl
+    .to(typed, { n: CMD.length, duration: .6, ease: 'none', onUpdate: draw })
+    .add(function () { shown = STEP1; draw(); }, '+=.2')
+    .add(function () { shown = STEP1 + STEP2; draw(); }, '+=.35')
+    .to(counter, { v: 100, duration: 1.3, ease: 'power2.inOut', onUpdate: function () { num.textContent = Math.round(counter.v); } }, 0)
+    .to('.loader__bar', { scaleX: 1, duration: 1.3, ease: 'power2.inOut' }, 0)
+    .to({}, { duration: .2 });
+  var bootDone = new Promise(function (r) { bootTl.eventCallback('onComplete', r); });
+  // Start on the next frame, so a slow first paint can't swallow the start of the typing.
+  requestAnimationFrame(function () { requestAnimationFrame(function () { bootTl.play(0); }); });
 
-  Promise.all([new Promise(function (r) { bootTl.eventCallback('onComplete', r); if (repeat) r(); }), imgReady, fontsReady, sceneReady]).then(intro);
+  Promise.all([bootDone, imgReady, fontsReady, sceneReady]).then(intro);
 
   function intro() {
     var secs = ((performance.now() - t0) / 1000).toFixed(2);
-    if (!repeat) out.innerHTML += '\n<span class="ok">&#10003; ready</span> in ' + secs + 's <span class="dim">&middot; shipping since 2018</span>';
+    out.innerHTML += '\n<span class="ok">&#10003; ready</span> in ' + secs + 's <span class="dim">&middot; shipping since 2018</span>';
     var tl = gsap.timeline({
       onComplete: function () {
         window.__ahIntroDone = true;
@@ -392,7 +394,8 @@
         checkPending();
       }
     });
-    tl.to('.term', { opacity: 0, y: -14, scale: .97, duration: .45, delay: repeat ? 0 : .28, ease: 'power2.in' })
+    // hold on "ready" long enough to read it, then close the terminal
+    tl.to('.term', { opacity: 0, y: -14, scale: .97, duration: .45, delay: .6, ease: 'power2.in' })
       .add(function () { onScene(function (s) { if (s.pixels) s.pixels.intro(2.4); }); }, '-=.15')
       .to(loader, { opacity: 0, duration: .7, ease: 'power2.out' }, '-=.1')
       .to(heroChars, { yPercent: 0, opacity: 1, duration: 1.3, stagger: .12, ease: 'expo.out' }, '-=.55')
