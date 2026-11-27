@@ -1,30 +1,60 @@
 /* =========================================================
-   Hero name with a grid-distortion hover (Three.js)
+   Hero name: letters lift off the page under the cursor (Three.js)
    The name is drawn into a texture and shown on a WebGL canvas
-   laid exactly over the HTML heading. The canvas is cut into a
-   grid of square cells; moving the cursor pushes the cells it
-   passes in the direction of the movement, so the letters smear
-   in blocks, then every cell eases back into place.
+   laid exactly over the HTML heading. The canvas is a finely
+   divided plane; near the cursor its vertices rise in a smooth
+   bump, so the letters there peel up and lean towards you, then
+   settle back flat when the cursor leaves. Where a letter has
+   lifted, a soft blue glow is left on the page beneath it.
+   Idea after "Interactive Text Effect with Three.js & GLSL"
+   (Paola Demichelis, Codrops).
    ========================================================= */
 import {
   WebGLRenderer, Scene, OrthographicCamera, PlaneGeometry, Mesh, ShaderMaterial,
-  CanvasTexture, DataTexture, RGBAFormat, FloatType, NearestFilter, LinearFilter
+  CanvasTexture, LinearFilter
 } from 'three';
 
-const VERT = /* glsl */`
+// Shared by both shaders: how high the page is lifted at a point, 0..1.
+const LIFT = /* glsl */`
+  uniform vec2 uSize;      // canvas size in CSS pixels
+  uniform vec2 uMouse;     // pointer in CSS pixels, y up
+  uniform float uAmp;      // 0..1, eases in while the pointer is near the name
+  uniform float uRadius;   // reach of the bump in CSS pixels
+  float easeInOutCubic(float x) {
+    return x < 0.5 ? 4.0 * x * x * x : 1.0 - pow(-2.0 * x + 2.0, 3.0) / 2.0;
+  }
+  float liftAt(vec2 p) {
+    return easeInOutCubic(clamp(1.0 - length(p - uMouse) / uRadius, 0.0, 1.0)) * uAmp;
+  }
+`;
+
+// Letters: each vertex moves up by the lift and spreads a little from the cursor,
+// as if the page bulged towards the viewer.
+const TEXT_VERT = /* glsl */`
+  ${LIFT}
+  uniform float uLift;     // how far the top of the bump moves up, in CSS pixels
   varying vec2 vUv;
-  void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }
+  varying float vLift;
+  void main() {
+    vUv = uv;
+    vec2 p = uv * uSize;
+    float k = liftAt(p);
+    vLift = k;
+    vec2 q = p + (p - uMouse) * k * 0.05;
+    q.y += k * uLift;
+    gl_Position = vec4(q / uSize * 2.0 - 1.0, 0.0, 1.0);
+  }
 `;
 
 // The text texture holds the letter shape in alpha and, in green, how far down its
 // word each pixel sits (0 top, 1 bottom). The shader colours it with the same
-// flowing gradient the HTML heading uses.
-const FRAG = /* glsl */`
+// flowing gradient the HTML heading uses; lifted parts catch a little more light.
+const TEXT_FRAG = /* glsl */`
   uniform sampler2D uText;
-  uniform sampler2D uGrid;
   uniform float uFlow;
   uniform float uOpacity;
   varying vec2 vUv;
+  varying float vLift;
   vec3 ramp(float g) {
     vec3 c0 = vec3(0.965, 0.953, 0.925);
     vec3 c1 = vec3(0.875, 0.898, 1.0);
@@ -35,17 +65,35 @@ const FRAG = /* glsl */`
     return mix(c1, c0, (g - 0.74) / 0.26);
   }
   void main() {
-    vec2 off = texture2D(uGrid, vUv).rg;
-    vec4 t = texture2D(uText, vUv - 0.02 * off);
+    vec4 t = texture2D(uText, vUv);
     // same mapping as background-size: 100% 260% with a moving background-position
     float g = (t.g + 1.6 * uFlow) / 2.6;
-    gl_FragColor = vec4(ramp(g), t.a * uOpacity);
+    vec3 col = mix(ramp(g), vec3(1.0), 0.28 * vLift);
+    gl_FragColor = vec4(col, t.a * uOpacity);
+  }
+`;
+
+// The glow left on the page: a blurred copy of the letters, visible only where
+// they have lifted away.
+const GLOW_VERT = /* glsl */`
+  varying vec2 vUv;
+  void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }
+`;
+const GLOW_FRAG = /* glsl */`
+  ${LIFT}
+  uniform sampler2D uShadow;
+  uniform float uOpacity;
+  varying vec2 vUv;
+  void main() {
+    float k = liftAt(vUv * uSize);
+    float a = texture2D(uShadow, vUv).a * smoothstep(0.0, 0.8, k) * 0.9 * uOpacity;
+    gl_FragColor = vec4(0.36, 0.47, 1.0, a);
   }
 `;
 
 const smooth = (t) => t * t * (3 - 2 * t);
 
-export function createHeroName(h1, opts = {}) {
+export function createHeroName(h1) {
   const words = Array.prototype.slice.call(h1.querySelectorAll('.px__word'));
   if (!words.length) return null;
 
@@ -54,54 +102,49 @@ export function createHeroName(h1, opts = {}) {
   canvas.setAttribute('aria-hidden', 'true');
   h1.appendChild(canvas);
 
-  const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: false, premultipliedAlpha: true });
+  const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, premultipliedAlpha: true });
   renderer.setClearColor(0x000000, 0);
   const scene = new Scene();
   const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
+  const mkTex = (cv) => {
+    const t = new CanvasTexture(cv);
+    t.minFilter = LinearFilter; t.magFilter = LinearFilter; t.generateMipmaps = false;
+    return t;
+  };
   const textCanvas = document.createElement('canvas');
-  const textTex = new CanvasTexture(textCanvas);
-  textTex.minFilter = LinearFilter; textTex.magFilter = LinearFilter; textTex.generateMipmaps = false;
+  const glowCanvas = document.createElement('canvas');
+  const textTex = mkTex(textCanvas);
+  const glowTex = mkTex(glowCanvas);
 
-  let cols = 1, rows = 1, gridData = new Float32Array(4), gridTex = null;
-  const mat = new ShaderMaterial({
-    vertexShader: VERT, fragmentShader: FRAG, transparent: true, depthTest: false, depthWrite: false,
-    uniforms: { uText: { value: textTex }, uGrid: { value: null }, uFlow: { value: 0 }, uOpacity: { value: 0 } },
+  // uniforms shared by both materials
+  const shared = {
+    uSize: { value: [1, 1] }, uMouse: { value: [-9999, -9999] }, uAmp: { value: 0 },
+    uRadius: { value: 100 }, uOpacity: { value: 0 },
+  };
+  const glowMat = new ShaderMaterial({
+    vertexShader: GLOW_VERT, fragmentShader: GLOW_FRAG, transparent: true, depthTest: false, depthWrite: false,
+    uniforms: Object.assign({ uShadow: { value: glowTex } }, shared),
   });
-  scene.add(new Mesh(new PlaneGeometry(2, 2), mat));
+  const textMat = new ShaderMaterial({
+    vertexShader: TEXT_VERT, fragmentShader: TEXT_FRAG, transparent: true, depthTest: false, depthWrite: false,
+    uniforms: Object.assign({ uText: { value: textTex }, uFlow: { value: 0 }, uLift: { value: 40 } }, shared),
+  });
+  const glowMesh = new Mesh(new PlaneGeometry(2, 2), glowMat);
+  const textMesh = new Mesh(new PlaneGeometry(2, 2), textMat);
+  glowMesh.renderOrder = 0; textMesh.renderOrder = 1;
+  scene.add(glowMesh, textMesh);
 
-  // the canvas reaches past the heading so smeared cells are not cut off
-  const PAD = 0.28;
-  let W = 0, H = 0, dpr = 1;
+  let W = 0, H = 0, dpr = 1, padTop = 0;
 
-  function layout() {
-    // layout sizes only (offsetWidth/offsetTop), so scroll and intro transforms don't skew them
-    W = h1.offsetWidth;
-    const hh = h1.offsetHeight;
-    const pad = Math.round(hh * PAD);
-    H = hh + pad * 2;
-    canvas.style.top = -pad + 'px';
-    canvas.style.height = H + 'px';
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    renderer.setPixelRatio(dpr);
-    renderer.setSize(W, H, false);
-
-    // draw the words where the HTML puts them
-    textCanvas.width = Math.round(W * dpr);
-    textCanvas.height = Math.round(H * dpr);
-    const c = textCanvas.getContext('2d');
-    c.setTransform(dpr, 0, 0, dpr, 0, 0);
-    c.clearRect(0, 0, W, H);
-    const cs = getComputedStyle(words[0]);
-    const fs = parseFloat(getComputedStyle(h1).fontSize);
+  function drawWords(c, fs, cs, offsetX) {
     c.font = '400 ' + fs + 'px ' + cs.fontFamily;
     if ('letterSpacing' in c) c.letterSpacing = cs.letterSpacing === 'normal' ? '0px' : cs.letterSpacing;
     c.textBaseline = 'alphabetic';
     const m = c.measureText('H');
     const asc = m.fontBoundingBoxAscent || fs * 0.92, desc = m.fontBoundingBoxDescent || fs * 0.25;
     words.forEach((w) => {
-      const x = w.offsetLeft;
-      const top = w.offsetTop + pad;
+      const top = w.offsetTop + padTop;
       const lh = w.offsetHeight;
       const base = top + (lh - (asc + desc)) / 2 + asc;
       // green carries "how far down the word", alpha carries the letter
@@ -109,55 +152,92 @@ export function createHeroName(h1, opts = {}) {
       g.addColorStop(0, 'rgb(255,0,0)');
       g.addColorStop(1, 'rgb(255,255,0)');
       c.fillStyle = g;
-      c.fillText(w.textContent.toUpperCase(), x, base);
+      c.fillText(w.textContent.toUpperCase(), w.offsetLeft + offsetX, base);
     });
+  }
+
+  function layout() {
+    // layout sizes only (offsetWidth/offsetTop), so scroll and intro transforms don't skew them
+    const fs = parseFloat(getComputedStyle(h1).fontSize);
+    const cs = getComputedStyle(words[0]);
+    W = h1.offsetWidth;
+    // room above the heading for the letters to lift into
+    padTop = Math.round(fs * 0.6);
+    const padBottom = Math.round(fs * 0.28);
+    H = h1.offsetHeight + padTop + padBottom;
+    canvas.style.top = -padTop + 'px';
+    canvas.style.height = H + 'px';
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    renderer.setPixelRatio(dpr);
+    renderer.setSize(W, H, false);
+
+    // the letters, where the HTML puts them
+    textCanvas.width = Math.round(W * dpr);
+    textCanvas.height = Math.round(H * dpr);
+    const c = textCanvas.getContext('2d');
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.clearRect(0, 0, W, H);
+    drawWords(c, fs, cs, 0);
     textTex.needsUpdate = true;
 
-    // square cells of about 34px on desktop, 22px on phones
-    const cell = W < 700 ? 22 : 34;
-    cols = Math.max(4, Math.round(W / cell));
-    rows = Math.max(2, Math.round(H / cell));
-    gridData = new Float32Array(cols * rows * 4);
-    if (gridTex) gridTex.dispose();
-    gridTex = new DataTexture(gridData, cols, rows, RGBAFormat, FloatType);
-    gridTex.magFilter = gridTex.minFilter = NearestFilter;
-    gridTex.needsUpdate = true;
-    mat.uniforms.uGrid.value = gridTex;
+    // a blurred copy at half size for the glow. The text is drawn far off to the
+    // left and only its shadow lands on the canvas, which blurs in every browser.
+    const k = 0.5, OFF = 6000;
+    glowCanvas.width = Math.ceil(W * k);
+    glowCanvas.height = Math.ceil(H * k);
+    const s = glowCanvas.getContext('2d');
+    s.setTransform(k, 0, 0, k, 0, 0);
+    s.clearRect(0, 0, W, H);
+    s.shadowColor = '#fff';
+    s.shadowBlur = fs * 0.09 * k;
+    s.shadowOffsetX = OFF * k;            // shadow offsets ignore the transform: device pixels
+    drawWords(s, fs, cs, -OFF);
+    glowTex.needsUpdate = true;
+
+    // about one vertex every 5px, so the bump bends smoothly
+    textMesh.geometry.dispose();
+    textMesh.geometry = new PlaneGeometry(2, 2, Math.min(360, Math.ceil(W / 5)), Math.min(160, Math.ceil(H / 5)));
+
+    shared.uSize.value = [W, H];
+    shared.uRadius.value = fs * 1.0;
+    textMat.uniforms.uLift.value = fs * 0.34;
   }
 
-  /* ---------- the cursor ---------- */
-  const mouse = { x: -1, y: -1, px: -1, py: -1, vx: 0, vy: 0 };
-  function move(cx, cy) {
+  /* ---------- the pointer ---------- */
+  const target = { x: -9999, y: -9999, near: false };
+  const mouse = { x: -9999, y: -9999 };
+  let amp = 0;
+  function point(cx, cy) {
     const r = canvas.getBoundingClientRect();
-    const x = (cx - r.left) / r.width, y = 1 - (cy - r.top) / r.height;
-    if (mouse.x < -0.5) { mouse.px = x; mouse.py = y; }
-    mouse.vx += x - mouse.px; mouse.vy += y - mouse.py;
-    mouse.px = mouse.x = x; mouse.py = mouse.y = y;
+    if (!r.width || !r.height) return;
+    // canvas pixels, y up; undo the scroll scale on the heading
+    target.x = (cx - r.left) * W / r.width;
+    target.y = (r.bottom - cy) * H / r.height;
+    const reach = shared.uRadius.value;
+    target.near = target.x > -reach && target.x < W + reach && target.y > -reach * 0.5 && target.y < H + reach * 0.5;
   }
-  window.addEventListener('pointermove', (e) => move(e.clientX, e.clientY), { passive: true });
-  window.addEventListener('touchmove', (e) => { const t = e.touches[0]; if (t) move(t.clientX, t.clientY); }, { passive: true });
+  const away = () => { target.near = false; };
+  window.addEventListener('pointermove', (e) => point(e.clientX, e.clientY), { passive: true });
+  window.addEventListener('pointerdown', (e) => point(e.clientX, e.clientY), { passive: true });
+  window.addEventListener('touchmove', (e) => { const t = e.touches[0]; if (t) point(t.clientX, t.clientY); }, { passive: true });
+  window.addEventListener('touchend', away, { passive: true });
+  window.addEventListener('touchcancel', away, { passive: true });
+  document.addEventListener('mouseleave', away);
+  window.addEventListener('blur', away);
 
-  const STRENGTH = 0.16, RADIUS = 3.4, RELAX = 0.9;
-  function updateGrid(dt) {
-    const relax = Math.pow(RELAX, dt * 60);
-    for (let i = 0; i < gridData.length; i += 4) { gridData[i] *= relax; gridData[i + 1] *= relax; }
-    if (mouse.x > -0.5 && mouse.x < 1.5 && mouse.y > -0.5 && mouse.y < 1.5) {
-      const gx = cols * mouse.x, gy = rows * mouse.y;
-      const rr = RADIUS * RADIUS;
-      for (let i = 0; i < cols; i++) {
-        for (let j = 0; j < rows; j++) {
-          const d = (gx - i - 0.5) * (gx - i - 0.5) + (gy - j - 0.5) * (gy - j - 0.5);
-          if (d >= rr) continue;
-          const k = 4 * (i + cols * j);
-          const power = Math.min(10, RADIUS / Math.sqrt(Math.max(d, 0.0001)));
-          gridData[k] += STRENGTH * 100 * mouse.vx * power;
-          gridData[k + 1] += STRENGTH * 100 * mouse.vy * power;
-        }
-      }
+  function updatePointer(dt) {
+    const f = 60 * dt;
+    // the bump grows in quickly and settles back a little slower
+    const goal = target.near ? 1 : 0;
+    amp += (goal - amp) * (1 - Math.pow(goal > amp ? 0.86 : 0.91, f));
+    if (amp < 0.02 && target.near) { mouse.x = target.x; mouse.y = target.y; }
+    else {
+      const e = 1 - Math.pow(0.78, f);
+      mouse.x += (target.x - mouse.x) * e;
+      mouse.y += (target.y - mouse.y) * e;
     }
-    const fade = Math.pow(0.9, dt * 60);
-    mouse.vx *= fade; mouse.vy *= fade;
-    gridTex.needsUpdate = true;
+    shared.uMouse.value = [mouse.x, mouse.y];
+    shared.uAmp.value = amp;
   }
 
   /* ---------- gradient flow, kept in step with the HTML heading's CSS animation ---------- */
@@ -175,9 +255,9 @@ export function createHeroName(h1, opts = {}) {
     raf = requestAnimationFrame(frame);
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     if (shown && opacity < 1) opacity = Math.min(1, opacity + dt / 0.35);
-    updateGrid(dt);
-    mat.uniforms.uFlow.value = flow(now);
-    mat.uniforms.uOpacity.value = opacity;
+    updatePointer(dt);
+    textMat.uniforms.uFlow.value = flow(now);
+    shared.uOpacity.value = opacity;
     renderer.render(scene, camera);
   }
   function start() { if (running) return; running = true; last = performance.now(); raf = requestAnimationFrame(frame); }
