@@ -19,28 +19,36 @@ const LIFT = /* glsl */`
   uniform vec2 uSize;      // canvas size in CSS pixels
   uniform vec2 uMouse;     // pointer in CSS pixels, y up
   uniform float uAmp;      // 0..1, eases in while the pointer is near the name
-  uniform float uRadius;   // reach of the bump in CSS pixels
+  uniform float uRadius;   // sideways reach of the bump in CSS pixels
+  uniform float uFlat;     // its height as a share of its width (1 = round)
   float easeInOutCubic(float x) {
     return x < 0.5 ? 4.0 * x * x * x : 1.0 - pow(-2.0 * x + 2.0, 3.0) / 2.0;
   }
   float liftAt(vec2 p) {
-    return easeInOutCubic(clamp(1.0 - length(p - uMouse) / uRadius, 0.0, 1.0)) * uAmp;
+    vec2 d = (p - uMouse) / vec2(uRadius, uRadius * uFlat);
+    return easeInOutCubic(clamp(1.0 - length(d), 0.0, 1.0)) * uAmp;
   }
 `;
 
-// Letters: each vertex moves up by the lift and spreads a little from the cursor,
-// as if the page bulged towards the viewer.
+// Letters: each vertex moves up by the lift, the way a raised point of a tilted page
+// shows on screen, and spreads a touch from the cursor as if leaning towards you.
+// The name stays straight, so the letters rise and arch rather than fold over.
 const TEXT_VERT = /* glsl */`
   ${LIFT}
   uniform float uLift;     // how far the top of the bump moves up, in CSS pixels
   varying vec2 vUv;
   varying float vLift;
+  varying float vSlope;
   void main() {
     vUv = uv;
     vec2 p = uv * uSize;
     float k = liftAt(p);
     vLift = k;
-    vec2 q = p + (p - uMouse) * k * 0.05;
+    // how steeply the page rises going up the screen at this point; with light from
+    // above, the side of the bump facing up catches a little more of it
+    float e = 2.0;
+    vSlope = (liftAt(p + vec2(0.0, e)) - liftAt(p - vec2(0.0, e))) / (2.0 * e) * uLift;
+    vec2 q = p + (p - uMouse) * k * 0.02;
     q.y += k * uLift;
     gl_Position = vec4(q / uSize * 2.0 - 1.0, 0.0, 1.0);
   }
@@ -55,6 +63,7 @@ const TEXT_FRAG = /* glsl */`
   uniform float uOpacity;
   varying vec2 vUv;
   varying float vLift;
+  varying float vSlope;
   vec3 ramp(float g) {
     vec3 c0 = vec3(0.965, 0.953, 0.925);
     vec3 c1 = vec3(0.875, 0.898, 1.0);
@@ -68,7 +77,8 @@ const TEXT_FRAG = /* glsl */`
     vec4 t = texture2D(uText, vUv);
     // same mapping as background-size: 100% 260% with a moving background-position
     float g = (t.g + 1.6 * uFlow) / 2.6;
-    vec3 col = mix(ramp(g), vec3(1.0), 0.28 * vLift);
+    vec3 col = mix(ramp(g), vec3(1.0), 0.18 * vLift);
+    col = mix(col, vec3(1.0), 0.25 * clamp(-vSlope, 0.0, 1.0));
     gl_FragColor = vec4(col, t.a * uOpacity);
   }
 `;
@@ -86,7 +96,7 @@ const GLOW_FRAG = /* glsl */`
   varying vec2 vUv;
   void main() {
     float k = liftAt(vUv * uSize);
-    float a = texture2D(uShadow, vUv).a * smoothstep(0.0, 0.8, k) * 0.9 * uOpacity;
+    float a = texture2D(uShadow, vUv).a * smoothstep(0.0, 0.8, k) * 0.55 * uOpacity;
     gl_FragColor = vec4(0.36, 0.47, 1.0, a);
   }
 `;
@@ -120,7 +130,7 @@ export function createHeroName(h1) {
   // uniforms shared by both materials
   const shared = {
     uSize: { value: [1, 1] }, uMouse: { value: [-9999, -9999] }, uAmp: { value: 0 },
-    uRadius: { value: 100 }, uOpacity: { value: 0 },
+    uRadius: { value: 100 }, uFlat: { value: 1.0 }, uOpacity: { value: 0 },
   };
   const glowMat = new ShaderMaterial({
     vertexShader: GLOW_VERT, fragmentShader: GLOW_FRAG, transparent: true, depthTest: false, depthWrite: false,
@@ -162,7 +172,7 @@ export function createHeroName(h1) {
     const cs = getComputedStyle(words[0]);
     W = h1.offsetWidth;
     // room above the heading for the letters to lift into
-    padTop = Math.round(fs * 0.6);
+    padTop = Math.round(fs * 0.42);
     const padBottom = Math.round(fs * 0.28);
     H = h1.offsetHeight + padTop + padBottom;
     canvas.style.top = -padTop + 'px';
@@ -199,8 +209,8 @@ export function createHeroName(h1) {
     textMesh.geometry = new PlaneGeometry(2, 2, Math.min(360, Math.ceil(W / 5)), Math.min(160, Math.ceil(H / 5)));
 
     shared.uSize.value = [W, H];
-    shared.uRadius.value = fs * 1.0;
-    textMat.uniforms.uLift.value = fs * 0.34;
+    shared.uRadius.value = fs * 0.95;
+    textMat.uniforms.uLift.value = fs * 0.22;
   }
 
   /* ---------- the pointer ---------- */
@@ -214,7 +224,7 @@ export function createHeroName(h1) {
     target.x = (cx - r.left) * W / r.width;
     target.y = (r.bottom - cy) * H / r.height;
     const reach = shared.uRadius.value;
-    target.near = target.x > -reach && target.x < W + reach && target.y > -reach * 0.5 && target.y < H + reach * 0.5;
+    target.near = target.x > -reach && target.x < W + reach && target.y > -reach * 0.45 && target.y < H + reach * 0.45;
   }
   const away = () => { target.near = false; };
   window.addEventListener('pointermove', (e) => point(e.clientX, e.clientY), { passive: true });
