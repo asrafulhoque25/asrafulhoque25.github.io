@@ -6,10 +6,10 @@
    lifts the plane, so the letters there rise, curl over and
    leave their shadow on the page.
 
-   Here the name stands straight like the HTML heading. When
-   the pointer comes onto the letters the page lies back, as in
-   the demo, and the letters under the pointer peel up; when it
-   leaves the letters the page stands up again.
+   Here the name leans back a little, and stays at that angle.
+   While the pointer is on the letters, the letters under it peel
+   up and curl over; when it leaves them they settle flat again.
+   The angle never changes on hover.
    ========================================================= */
 import {
   WebGLRenderer, Scene, PerspectiveCamera, Group, PlaneGeometry, Mesh, ShaderMaterial,
@@ -20,7 +20,7 @@ import {
 const LIFT = /* glsl */`
   uniform vec2 uSize;      // page size in CSS pixels
   uniform vec2 uMouse;     // pointer on the page in CSS pixels, y up
-  uniform float uAmp;      // 0..1, grows as the page lies back
+  uniform float uAmp;      // 0..1, grows while the pointer is on the letters
   uniform float uRadius;   // reach of the bump in CSS pixels
   float easeInOutCubic(float x) {
     return x < 0.5 ? 4.0 * x * x * x : 1.0 - pow(-2.0 * x + 2.0, 3.0) / 2.0;
@@ -96,8 +96,9 @@ const SHADOW_FRAG = /* glsl */`
 const smooth = (t) => t * t * (3 - 2 * t);
 const easeInOutCubic = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
 
-// How far the page lies back while the pointer is on the name (radians from upright).
-const TILT = 1.0;
+// How far the page leans back (radians from upright). It settles at this angle once,
+// right after the intro, and stays there.
+const TILT = 0.55;
 const FOV = 8;
 
 export function createHeroName(h1) {
@@ -145,7 +146,7 @@ export function createHeroName(h1) {
   shadowMesh.renderOrder = 0; textMesh.renderOrder = 1;
   pivot.add(shadowMesh, textMesh);
 
-  let W = 0, H = 0, dpr = 1, padTop = 0, bands = [];
+  let W = 0, H = 0, dpr = 1, padTop = 0, bands = [], midDown = 0;
 
   function drawWords(c, fs, cs, offsetX) {
     c.font = '400 ' + fs + 'px ' + cs.fontFamily;
@@ -218,7 +219,7 @@ export function createHeroName(h1) {
     camera.updateProjectionMatrix();
 
     // the page turns about the middle of the letters
-    const midDown = bands.length ? (bands[0].y0 + bands[bands.length - 1].y1) / 2 : H / 2;
+    midDown = bands.length ? (bands[0].y0 + bands[bands.length - 1].y1) / 2 : H / 2;
     const pivotY = H / 2 - midDown;
     pivot.position.set(0, pivotY, 0);
 
@@ -231,24 +232,26 @@ export function createHeroName(h1) {
     shadowMesh.position.set(0, -pivotY, -1);
 
     shared.uSize.value = [W, H];
-    shared.uRadius.value = fs * 0.72;
-    textMat.uniforms.uLift.value = fs * 0.26;
+    // at this angle the bump has to be this tall for the letters to curl over
+    shared.uRadius.value = fs * 0.7;
+    textMat.uniforms.uLift.value = fs * 0.42;
     edge = fs * 0.03;
   }
 
   /* ---------- the pointer ---------- */
   const target = { x: -9999, y: -9999, near: false };
   const mouse = { x: -9999, y: -9999 };
-  let on = 0, edge = 4, client = null;
+  let on = 0, edge = 4, client = null, angle = 0;
   // Only while the pointer is on the letters themselves (each word's cap-height box).
-  // The point under it is taken on the upright name, so the part of the letter you
-  // pointed at is the part that lifts, even after the page lies back.
+  // The pointer is mapped onto the leaning page, so the part of the letter under it
+  // is the part that lifts.
   function point() {
     if (!client) { target.near = false; return; }
     const r = canvas.getBoundingClientRect();
     if (!r.width || !r.height) return;
     const x = (client.x - r.left) * W / r.width;
-    const yDown = (client.y - r.top) * H / r.height;
+    const yScreen = (client.y - r.top) * H / r.height;
+    const yDown = midDown + (yScreen - midDown) / Math.cos(angle);
     target.near = bands.some((b) => x >= b.x0 - edge && x <= b.x1 + edge && yDown >= b.y0 - edge && yDown <= b.y1 + edge);
     if (target.near) { target.x = x; target.y = H - yDown; }
   }
@@ -266,16 +269,15 @@ export function createHeroName(h1) {
     const f = 60 * dt;
     // the heading moves while the page scrolls, so check again against a still pointer
     point();
-    // lie back in about half a second; stand up a little slower
+    // the bump grows in quickly and settles back a little slower
     const goal = target.near ? 1 : 0;
-    on += (goal - on) * (1 - Math.pow(goal > on ? 0.9 : 0.93, f));
+    on += (goal - on) * (1 - Math.pow(goal > on ? 0.88 : 0.92, f));
     if (on < 0.02 && target.near) { mouse.x = target.x; mouse.y = target.y; }
     else {
       const e = 1 - Math.pow(0.8, f);
       mouse.x += (target.x - mouse.x) * e;
       mouse.y += (target.y - mouse.y) * e;
     }
-    pivot.rotation.x = -TILT * easeInOutCubic(Math.min(1, on));
     shared.uMouse.value = [mouse.x, mouse.y];
     shared.uAmp.value = smooth(Math.min(1, on));
   }
@@ -290,11 +292,15 @@ export function createHeroName(h1) {
   }
 
   /* ---------- loop: only while the hero is on screen ---------- */
-  let running = false, raf = 0, last = performance.now(), shown = false, opacity = 0;
+  let running = false, raf = 0, last = performance.now(), shown = false, opacity = 0, settle = -0.5;
   function frame(now) {
     raf = requestAnimationFrame(frame);
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     if (shown && opacity < 1) opacity = Math.min(1, opacity + dt / 0.35);
+    // once the canvas has faded in over the upright HTML letters, lean back gently
+    if (shown && settle < 1) settle = Math.min(1, settle + dt / 0.9);
+    angle = TILT * easeInOutCubic(Math.max(0, settle));
+    pivot.rotation.x = -angle;
     updatePointer(dt);
     textMat.uniforms.uFlow.value = flow(now);
     shared.uOpacity.value = opacity;
