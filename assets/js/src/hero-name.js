@@ -1,69 +1,60 @@
 /* =========================================================
-   Hero name: letters lift off the page under the cursor (Three.js)
-   The name is drawn into a texture and shown on a WebGL canvas
-   laid exactly over the HTML heading. The canvas is a finely
-   divided plane. While the cursor is on the letters, a small,
-   smooth bump rises under it, so the letters there lift slightly
-   and lean towards you, then settle back flat when the cursor
-   leaves them. A faint blue glow is left beneath lifted letters.
-   Idea after "Interactive Text Effect with Three.js & GLSL"
-   (Paola Demichelis, Codrops).
+   Hero name: the letters peel up off a tilted page (Three.js)
+   After "Interactive Text Effect with Three.js & GLSL" by
+   Paola Demichelis (Codrops): text on a finely divided plane,
+   seen at a low angle, where a smooth bump under the cursor
+   lifts the plane, so the letters there rise, curl over and
+   leave their shadow on the page.
+
+   Here the name stands straight like the HTML heading. When
+   the pointer comes onto the letters the page lies back, as in
+   the demo, and the letters under the pointer peel up; when it
+   leaves the letters the page stands up again.
    ========================================================= */
 import {
-  WebGLRenderer, Scene, OrthographicCamera, PlaneGeometry, Mesh, ShaderMaterial,
+  WebGLRenderer, Scene, PerspectiveCamera, Group, PlaneGeometry, Mesh, ShaderMaterial,
   CanvasTexture, LinearFilter
 } from 'three';
 
-// Shared by both shaders: how high the page is lifted at a point, 0..1.
+// How high the page is lifted at a point, 0..1 (the demo's easeInOutCubic bump).
 const LIFT = /* glsl */`
-  uniform vec2 uSize;      // canvas size in CSS pixels
-  uniform vec2 uMouse;     // pointer in CSS pixels, y up
-  uniform float uAmp;      // 0..1, eases in while the pointer is near the name
-  uniform float uRadius;   // sideways reach of the bump in CSS pixels
-  uniform float uFlat;     // its height as a share of its width (1 = round)
+  uniform vec2 uSize;      // page size in CSS pixels
+  uniform vec2 uMouse;     // pointer on the page in CSS pixels, y up
+  uniform float uAmp;      // 0..1, grows as the page lies back
+  uniform float uRadius;   // reach of the bump in CSS pixels
   float easeInOutCubic(float x) {
     return x < 0.5 ? 4.0 * x * x * x : 1.0 - pow(-2.0 * x + 2.0, 3.0) / 2.0;
   }
   float liftAt(vec2 p) {
-    vec2 d = (p - uMouse) / vec2(uRadius, uRadius * uFlat);
-    return easeInOutCubic(clamp(1.0 - length(d), 0.0, 1.0)) * uAmp;
+    return easeInOutCubic(clamp(1.0 - length(p - uMouse) / uRadius, 0.0, 1.0)) * uAmp;
   }
 `;
 
-// Letters: each vertex moves up by the lift, the way a raised point of a tilted page
-// shows on screen, and spreads a touch from the cursor as if leaning towards you.
-// The name stays straight, so the letters rise and arch rather than fold over.
+// Letters: the plane rises towards the viewer (local z) under the pointer.
 const TEXT_VERT = /* glsl */`
   ${LIFT}
-  uniform float uLift;     // how far the top of the bump moves up, in CSS pixels
+  uniform float uLift;     // height of the bump in CSS pixels
   varying vec2 vUv;
   varying float vLift;
-  varying float vSlope;
   void main() {
     vUv = uv;
-    vec2 p = uv * uSize;
-    float k = liftAt(p);
+    float k = liftAt(uv * uSize);
     vLift = k;
-    // how steeply the page rises going up the screen at this point; with light from
-    // above, the side of the bump facing up catches a little more of it
-    float e = 2.0;
-    vSlope = (liftAt(p + vec2(0.0, e)) - liftAt(p - vec2(0.0, e))) / (2.0 * e) * uLift;
-    vec2 q = p + (p - uMouse) * k * 0.012;
-    q.y += k * uLift;
-    gl_Position = vec4(q / uSize * 2.0 - 1.0, 0.0, 1.0);
+    vec3 p = position;
+    p.z += k * uLift;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
   }
 `;
 
 // The text texture holds the letter shape in alpha and, in green, how far down its
 // word each pixel sits (0 top, 1 bottom). The shader colours it with the same
-// flowing gradient the HTML heading uses; lifted parts catch a little more light.
+// flowing gradient the HTML heading uses.
 const TEXT_FRAG = /* glsl */`
   uniform sampler2D uText;
   uniform float uFlow;
   uniform float uOpacity;
   varying vec2 vUv;
   varying float vLift;
-  varying float vSlope;
   vec3 ramp(float g) {
     vec3 c0 = vec3(0.965, 0.953, 0.925);
     vec3 c1 = vec3(0.875, 0.898, 1.0);
@@ -75,33 +66,39 @@ const TEXT_FRAG = /* glsl */`
   }
   void main() {
     vec4 t = texture2D(uText, vUv);
+    // empty page: draw nothing, so it never hides letters folded behind it
+    if (t.a < 0.02) discard;
     // same mapping as background-size: 100% 260% with a moving background-position
     float g = (t.g + 1.6 * uFlow) / 2.6;
-    vec3 col = mix(ramp(g), vec3(1.0), 0.1 * vLift);
-    col = mix(col, vec3(1.0), 0.15 * clamp(-vSlope, 0.0, 1.0));
+    vec3 col = mix(ramp(g), vec3(1.0), 0.12 * vLift);
     gl_FragColor = vec4(col, t.a * uOpacity);
   }
 `;
 
-// The glow left on the page: a blurred copy of the letters, visible only where
-// they have lifted away.
-const GLOW_VERT = /* glsl */`
+// Shadow: a blurred copy of the letters lying flat on the page, showing where
+// they have lifted off it.
+const SHADOW_VERT = /* glsl */`
   varying vec2 vUv;
-  void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }
+  void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
 `;
-const GLOW_FRAG = /* glsl */`
+const SHADOW_FRAG = /* glsl */`
   ${LIFT}
   uniform sampler2D uShadow;
   uniform float uOpacity;
   varying vec2 vUv;
   void main() {
     float k = liftAt(vUv * uSize);
-    float a = texture2D(uShadow, vUv).a * smoothstep(0.0, 0.8, k) * 0.32 * uOpacity;
-    gl_FragColor = vec4(0.36, 0.47, 1.0, a);
+    float a = texture2D(uShadow, vUv).a * smoothstep(0.0, 0.35, k) * (1.0 - 0.45 * k) * 0.85 * uOpacity;
+    gl_FragColor = vec4(0.02, 0.03, 0.08, a);
   }
 `;
 
 const smooth = (t) => t * t * (3 - 2 * t);
+const easeInOutCubic = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+
+// How far the page lies back while the pointer is on the name (radians from upright).
+const TILT = 1.0;
+const FOV = 8;
 
 export function createHeroName(h1) {
   const words = Array.prototype.slice.call(h1.querySelectorAll('.px__word'));
@@ -115,7 +112,10 @@ export function createHeroName(h1) {
   const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, premultipliedAlpha: true });
   renderer.setClearColor(0x000000, 0);
   const scene = new Scene();
-  const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  const camera = new PerspectiveCamera(FOV, 1, 1, 20000);
+  // the page turns about a line through the middle of the letters
+  const pivot = new Group();
+  scene.add(pivot);
 
   const mkTex = (cv) => {
     const t = new CanvasTexture(cv);
@@ -123,27 +123,27 @@ export function createHeroName(h1) {
     return t;
   };
   const textCanvas = document.createElement('canvas');
-  const glowCanvas = document.createElement('canvas');
+  const shadowCanvas = document.createElement('canvas');
   const textTex = mkTex(textCanvas);
-  const glowTex = mkTex(glowCanvas);
+  const shadowTex = mkTex(shadowCanvas);
 
   // uniforms shared by both materials
   const shared = {
     uSize: { value: [1, 1] }, uMouse: { value: [-9999, -9999] }, uAmp: { value: 0 },
-    uRadius: { value: 100 }, uFlat: { value: 1.0 }, uOpacity: { value: 0 },
+    uRadius: { value: 100 }, uOpacity: { value: 0 },
   };
-  const glowMat = new ShaderMaterial({
-    vertexShader: GLOW_VERT, fragmentShader: GLOW_FRAG, transparent: true, depthTest: false, depthWrite: false,
-    uniforms: Object.assign({ uShadow: { value: glowTex } }, shared),
+  const shadowMat = new ShaderMaterial({
+    vertexShader: SHADOW_VERT, fragmentShader: SHADOW_FRAG, transparent: true, depthTest: false, depthWrite: false,
+    uniforms: Object.assign({ uShadow: { value: shadowTex } }, shared),
   });
   const textMat = new ShaderMaterial({
-    vertexShader: TEXT_VERT, fragmentShader: TEXT_FRAG, transparent: true, depthTest: false, depthWrite: false,
+    vertexShader: TEXT_VERT, fragmentShader: TEXT_FRAG, transparent: true, depthTest: true, depthWrite: true,
     uniforms: Object.assign({ uText: { value: textTex }, uFlow: { value: 0 }, uLift: { value: 40 } }, shared),
   });
-  const glowMesh = new Mesh(new PlaneGeometry(2, 2), glowMat);
-  const textMesh = new Mesh(new PlaneGeometry(2, 2), textMat);
-  glowMesh.renderOrder = 0; textMesh.renderOrder = 1;
-  scene.add(glowMesh, textMesh);
+  const shadowMesh = new Mesh(new PlaneGeometry(1, 1), shadowMat);
+  const textMesh = new Mesh(new PlaneGeometry(1, 1), textMat);
+  shadowMesh.renderOrder = 0; textMesh.renderOrder = 1;
+  pivot.add(shadowMesh, textMesh);
 
   let W = 0, H = 0, dpr = 1, padTop = 0, bands = [];
 
@@ -176,9 +176,9 @@ export function createHeroName(h1) {
     const fs = parseFloat(getComputedStyle(h1).fontSize);
     const cs = getComputedStyle(words[0]);
     W = h1.offsetWidth;
-    // room above the heading for the letters to lift into
-    padTop = Math.round(fs * 0.3);
-    const padBottom = Math.round(fs * 0.2);
+    // room above the heading for the letters to rise into
+    padTop = Math.round(fs * 0.36);
+    const padBottom = Math.round(fs * 0.24);
     H = h1.offsetHeight + padTop + padBottom;
     canvas.style.top = -padTop + 'px';
     canvas.style.height = H + 'px';
@@ -195,41 +195,58 @@ export function createHeroName(h1) {
     drawWords(c, fs, cs, 0);
     textTex.needsUpdate = true;
 
-    // a blurred copy at half size for the glow. The text is drawn far off to the
-    // left and only its shadow lands on the canvas, which blurs in every browser.
+    // a blurred copy at half size for the shadow. The text is drawn far off to the
+    // left and only its canvas shadow lands on the canvas, which blurs in every browser.
     const k = 0.5, OFF = 6000;
-    glowCanvas.width = Math.ceil(W * k);
-    glowCanvas.height = Math.ceil(H * k);
-    const s = glowCanvas.getContext('2d');
+    shadowCanvas.width = Math.ceil(W * k);
+    shadowCanvas.height = Math.ceil(H * k);
+    const s = shadowCanvas.getContext('2d');
     s.setTransform(k, 0, 0, k, 0, 0);
     s.clearRect(0, 0, W, H);
-    s.shadowColor = '#fff';
-    s.shadowBlur = fs * 0.09 * k;
+    s.shadowColor = '#000';
+    s.shadowBlur = fs * 0.06 * k;
     s.shadowOffsetX = OFF * k;            // shadow offsets ignore the transform: device pixels
     drawWords(s, fs, cs, -OFF);
-    glowTex.needsUpdate = true;
+    shadowTex.needsUpdate = true;
 
-    // about one vertex every 5px, so the bump bends smoothly
+    // world units are CSS pixels; the camera sees the upright page exactly as the canvas
+    camera.aspect = W / H;
+    camera.position.set(0, 0, (H / 2) / Math.tan((FOV * Math.PI / 180) / 2));
+    camera.near = camera.position.z * 0.2;
+    camera.far = camera.position.z * 3;
+    camera.lookAt(0, 0, 0);
+    camera.updateProjectionMatrix();
+
+    // the page turns about the middle of the letters
+    const midDown = bands.length ? (bands[0].y0 + bands[bands.length - 1].y1) / 2 : H / 2;
+    const pivotY = H / 2 - midDown;
+    pivot.position.set(0, pivotY, 0);
+
+    // about one vertex every 4px, so the bump bends smoothly
     textMesh.geometry.dispose();
-    textMesh.geometry = new PlaneGeometry(2, 2, Math.min(360, Math.ceil(W / 5)), Math.min(160, Math.ceil(H / 5)));
+    textMesh.geometry = new PlaneGeometry(W, H, Math.min(420, Math.ceil(W / 4)), Math.min(180, Math.ceil(H / 4)));
+    shadowMesh.geometry.dispose();
+    shadowMesh.geometry = new PlaneGeometry(W, H);
+    textMesh.position.set(0, -pivotY, 0);
+    shadowMesh.position.set(0, -pivotY, -1);
 
     shared.uSize.value = [W, H];
-    shared.uRadius.value = fs * 0.6;
-    textMat.uniforms.uLift.value = fs * 0.13;
+    shared.uRadius.value = fs * 0.72;
+    textMat.uniforms.uLift.value = fs * 0.26;
     edge = fs * 0.03;
   }
 
   /* ---------- the pointer ---------- */
   const target = { x: -9999, y: -9999, near: false };
   const mouse = { x: -9999, y: -9999 };
-  let amp = 0, edge = 4, client = null;
-  // Only while the pointer is on the letters themselves (each word's cap-height box),
-  // not above, below or beside them.
+  let on = 0, edge = 4, client = null;
+  // Only while the pointer is on the letters themselves (each word's cap-height box).
+  // The point under it is taken on the upright name, so the part of the letter you
+  // pointed at is the part that lifts, even after the page lies back.
   function point() {
     if (!client) { target.near = false; return; }
     const r = canvas.getBoundingClientRect();
     if (!r.width || !r.height) return;
-    // canvas pixels; undo the scroll scale on the heading
     const x = (client.x - r.left) * W / r.width;
     const yDown = (client.y - r.top) * H / r.height;
     target.near = bands.some((b) => x >= b.x0 - edge && x <= b.x1 + edge && yDown >= b.y0 - edge && yDown <= b.y1 + edge);
@@ -249,17 +266,18 @@ export function createHeroName(h1) {
     const f = 60 * dt;
     // the heading moves while the page scrolls, so check again against a still pointer
     point();
-    // the bump grows in quickly and settles back a little slower
+    // lie back in about half a second; stand up a little slower
     const goal = target.near ? 1 : 0;
-    amp += (goal - amp) * (1 - Math.pow(goal > amp ? 0.86 : 0.91, f));
-    if (amp < 0.02 && target.near) { mouse.x = target.x; mouse.y = target.y; }
+    on += (goal - on) * (1 - Math.pow(goal > on ? 0.9 : 0.93, f));
+    if (on < 0.02 && target.near) { mouse.x = target.x; mouse.y = target.y; }
     else {
-      const e = 1 - Math.pow(0.78, f);
+      const e = 1 - Math.pow(0.8, f);
       mouse.x += (target.x - mouse.x) * e;
       mouse.y += (target.y - mouse.y) * e;
     }
+    pivot.rotation.x = -TILT * easeInOutCubic(Math.min(1, on));
     shared.uMouse.value = [mouse.x, mouse.y];
-    shared.uAmp.value = amp;
+    shared.uAmp.value = smooth(Math.min(1, on));
   }
 
   /* ---------- gradient flow, kept in step with the HTML heading's CSS animation ---------- */
