@@ -2,10 +2,10 @@
    Hero name: letters lift off the page under the cursor (Three.js)
    The name is drawn into a texture and shown on a WebGL canvas
    laid exactly over the HTML heading. The canvas is a finely
-   divided plane; near the cursor its vertices rise in a smooth
-   bump, so the letters there peel up and lean towards you, then
-   settle back flat when the cursor leaves. Where a letter has
-   lifted, a soft blue glow is left on the page beneath it.
+   divided plane. While the cursor is on the letters, a small,
+   smooth bump rises under it, so the letters there lift slightly
+   and lean towards you, then settle back flat when the cursor
+   leaves them. A faint blue glow is left beneath lifted letters.
    Idea after "Interactive Text Effect with Three.js & GLSL"
    (Paola Demichelis, Codrops).
    ========================================================= */
@@ -48,7 +48,7 @@ const TEXT_VERT = /* glsl */`
     // above, the side of the bump facing up catches a little more of it
     float e = 2.0;
     vSlope = (liftAt(p + vec2(0.0, e)) - liftAt(p - vec2(0.0, e))) / (2.0 * e) * uLift;
-    vec2 q = p + (p - uMouse) * k * 0.02;
+    vec2 q = p + (p - uMouse) * k * 0.012;
     q.y += k * uLift;
     gl_Position = vec4(q / uSize * 2.0 - 1.0, 0.0, 1.0);
   }
@@ -77,8 +77,8 @@ const TEXT_FRAG = /* glsl */`
     vec4 t = texture2D(uText, vUv);
     // same mapping as background-size: 100% 260% with a moving background-position
     float g = (t.g + 1.6 * uFlow) / 2.6;
-    vec3 col = mix(ramp(g), vec3(1.0), 0.18 * vLift);
-    col = mix(col, vec3(1.0), 0.25 * clamp(-vSlope, 0.0, 1.0));
+    vec3 col = mix(ramp(g), vec3(1.0), 0.1 * vLift);
+    col = mix(col, vec3(1.0), 0.15 * clamp(-vSlope, 0.0, 1.0));
     gl_FragColor = vec4(col, t.a * uOpacity);
   }
 `;
@@ -96,7 +96,7 @@ const GLOW_FRAG = /* glsl */`
   varying vec2 vUv;
   void main() {
     float k = liftAt(vUv * uSize);
-    float a = texture2D(uShadow, vUv).a * smoothstep(0.0, 0.8, k) * 0.55 * uOpacity;
+    float a = texture2D(uShadow, vUv).a * smoothstep(0.0, 0.8, k) * 0.32 * uOpacity;
     gl_FragColor = vec4(0.36, 0.47, 1.0, a);
   }
 `;
@@ -145,7 +145,7 @@ export function createHeroName(h1) {
   glowMesh.renderOrder = 0; textMesh.renderOrder = 1;
   scene.add(glowMesh, textMesh);
 
-  let W = 0, H = 0, dpr = 1, padTop = 0;
+  let W = 0, H = 0, dpr = 1, padTop = 0, bands = [];
 
   function drawWords(c, fs, cs, offsetX) {
     c.font = '400 ' + fs + 'px ' + cs.fontFamily;
@@ -153,6 +153,8 @@ export function createHeroName(h1) {
     c.textBaseline = 'alphabetic';
     const m = c.measureText('H');
     const asc = m.fontBoundingBoxAscent || fs * 0.92, desc = m.fontBoundingBoxDescent || fs * 0.25;
+    const cap = m.actualBoundingBoxAscent || fs * 0.72;
+    if (!offsetX) bands = [];
     words.forEach((w) => {
       const top = w.offsetTop + padTop;
       const lh = w.offsetHeight;
@@ -162,7 +164,10 @@ export function createHeroName(h1) {
       g.addColorStop(0, 'rgb(255,0,0)');
       g.addColorStop(1, 'rgb(255,255,0)');
       c.fillStyle = g;
-      c.fillText(w.textContent.toUpperCase(), w.offsetLeft + offsetX, base);
+      const text = w.textContent.toUpperCase();
+      c.fillText(text, w.offsetLeft + offsetX, base);
+      // the box the letters fill: cap height down to the baseline (a little more for the Q's tail)
+      if (!offsetX) bands.push({ x0: w.offsetLeft, x1: w.offsetLeft + c.measureText(text).width, y0: base - cap, y1: base + fs * 0.05 });
     });
   }
 
@@ -172,8 +177,8 @@ export function createHeroName(h1) {
     const cs = getComputedStyle(words[0]);
     W = h1.offsetWidth;
     // room above the heading for the letters to lift into
-    padTop = Math.round(fs * 0.42);
-    const padBottom = Math.round(fs * 0.28);
+    padTop = Math.round(fs * 0.3);
+    const padBottom = Math.round(fs * 0.2);
     H = h1.offsetHeight + padTop + padBottom;
     canvas.style.top = -padTop + 'px';
     canvas.style.height = H + 'px';
@@ -209,27 +214,32 @@ export function createHeroName(h1) {
     textMesh.geometry = new PlaneGeometry(2, 2, Math.min(360, Math.ceil(W / 5)), Math.min(160, Math.ceil(H / 5)));
 
     shared.uSize.value = [W, H];
-    shared.uRadius.value = fs * 0.95;
-    textMat.uniforms.uLift.value = fs * 0.22;
+    shared.uRadius.value = fs * 0.6;
+    textMat.uniforms.uLift.value = fs * 0.13;
+    edge = fs * 0.03;
   }
 
   /* ---------- the pointer ---------- */
   const target = { x: -9999, y: -9999, near: false };
   const mouse = { x: -9999, y: -9999 };
-  let amp = 0;
-  function point(cx, cy) {
+  let amp = 0, edge = 4, client = null;
+  // Only while the pointer is on the letters themselves (each word's cap-height box),
+  // not above, below or beside them.
+  function point() {
+    if (!client) { target.near = false; return; }
     const r = canvas.getBoundingClientRect();
     if (!r.width || !r.height) return;
-    // canvas pixels, y up; undo the scroll scale on the heading
-    target.x = (cx - r.left) * W / r.width;
-    target.y = (r.bottom - cy) * H / r.height;
-    const reach = shared.uRadius.value;
-    target.near = target.x > -reach && target.x < W + reach && target.y > -reach * 0.45 && target.y < H + reach * 0.45;
+    // canvas pixels; undo the scroll scale on the heading
+    const x = (client.x - r.left) * W / r.width;
+    const yDown = (client.y - r.top) * H / r.height;
+    target.near = bands.some((b) => x >= b.x0 - edge && x <= b.x1 + edge && yDown >= b.y0 - edge && yDown <= b.y1 + edge);
+    if (target.near) { target.x = x; target.y = H - yDown; }
   }
-  const away = () => { target.near = false; };
-  window.addEventListener('pointermove', (e) => point(e.clientX, e.clientY), { passive: true });
-  window.addEventListener('pointerdown', (e) => point(e.clientX, e.clientY), { passive: true });
-  window.addEventListener('touchmove', (e) => { const t = e.touches[0]; if (t) point(t.clientX, t.clientY); }, { passive: true });
+  const at = (x, y) => { client = { x, y }; point(); };
+  const away = () => { client = null; target.near = false; };
+  window.addEventListener('pointermove', (e) => at(e.clientX, e.clientY), { passive: true });
+  window.addEventListener('pointerdown', (e) => at(e.clientX, e.clientY), { passive: true });
+  window.addEventListener('touchmove', (e) => { const t = e.touches[0]; if (t) at(t.clientX, t.clientY); }, { passive: true });
   window.addEventListener('touchend', away, { passive: true });
   window.addEventListener('touchcancel', away, { passive: true });
   document.addEventListener('mouseleave', away);
@@ -237,6 +247,8 @@ export function createHeroName(h1) {
 
   function updatePointer(dt) {
     const f = 60 * dt;
+    // the heading moves while the page scrolls, so check again against a still pointer
+    point();
     // the bump grows in quickly and settles back a little slower
     const goal = target.near ? 1 : 0;
     amp += (goal - amp) * (1 - Math.pow(goal > amp ? 0.86 : 0.91, f));
