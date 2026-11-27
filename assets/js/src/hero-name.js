@@ -8,9 +8,10 @@
 
    Here the name leans back a little, from the first frame, and
    stays at that angle. While the pointer is on the letters, the
-   letters under it lift gently off the page and cast a soft
-   shadow onto the page and the letters below; when it leaves
-   them they settle flat again. The angle never changes.
+   letters under it come up off the page just a touch and cast a
+   soft shadow down and to the right, onto the letters and page
+   around them; when it leaves them the shadow fades away. The
+   angle never changes and the letters keep their shape.
    ========================================================= */
 import {
   WebGLRenderer, Scene, PerspectiveCamera, Group, PlaneGeometry, Mesh, ShaderMaterial,
@@ -24,6 +25,7 @@ const LIFT = /* glsl */`
   uniform float uAmp;      // 0..1, grows while the pointer is on the letters
   uniform float uRadius;   // reach of the bump in CSS pixels
   uniform float uLift;     // height of the bump in CSS pixels
+  uniform vec2 uCast;      // where a lifted letter's shadow lands, in CSS pixels (y up)
   float easeInOutCubic(float x) {
     return x < 0.5 ? 4.0 * x * x * x : 1.0 - pow(-2.0 * x + 2.0, 3.0) / 2.0;
   }
@@ -71,16 +73,16 @@ const TEXT_FRAG = /* glsl */`
     if (t.a < 0.02) discard;
     // same mapping as background-size: 100% 260% with a moving background-position
     float g = (t.g + 1.6 * uFlow) / 2.6;
-    vec3 col = mix(ramp(g), vec3(1.0), 0.12 * vLift);
+    vec3 col = mix(ramp(g), vec3(1.0), 0.16 * vLift);
     gl_FragColor = vec4(col, t.a * uOpacity);
   }
 `;
 
-// Shadow: a blurred copy of the letters on the page. The light comes from above and
-// behind the name, so a lifted letter's shadow falls towards the viewer: a point on
-// the page is shaded by the letters a little further up the page, by as much as they
-// are lifted. It sits just in front of the flat page, so it darkens the flat letters
-// it falls on, and behind anything lifted higher.
+// Shadow: a blurred copy of the letters on the page. The light comes from the upper
+// left, so a lifted letter's shadow lands down and to the right of it: a point on the
+// page is shaded by the letter at (point - uCast), as strongly as that letter is
+// lifted. It sits just in front of the flat page, so it darkens the letters and page
+// it falls on, and behind the lifted letters themselves.
 const SHADOW_VERT = /* glsl */`
   varying vec2 vUv;
   void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
@@ -91,19 +93,18 @@ const SHADOW_FRAG = /* glsl */`
   uniform float uOpacity;
   varying vec2 vUv;
   void main() {
-    vec2 p = vUv * uSize;
-    float k = liftAt(p);
-    vec2 caster = p + vec2(-0.2, 1.0) * k * uLift * 0.75;
-    float a = texture2D(uShadow, caster / uSize).a * smoothstep(0.0, 0.3, k) * 0.85 * uOpacity;
-    gl_FragColor = vec4(0.0, 0.01, 0.04, a);
+    vec2 caster = vUv * uSize - uCast;
+    float k = liftAt(caster);
+    float a = texture2D(uShadow, caster / uSize).a * smoothstep(0.0, 0.6, k) * 0.78 * uOpacity;
+    gl_FragColor = vec4(0.0, 0.01, 0.05, a);
   }
 `;
 
 const smooth = (t) => t * t * (3 - 2 * t);
 
 // How far the page leans back (radians from upright). Fixed: it never changes.
-const TILT = 0.55;
-const FOV = 8;
+const TILT = 0.42;
+const FOV = 6;
 
 export function createHeroName(h1) {
   const words = Array.prototype.slice.call(h1.querySelectorAll('.px__word'));
@@ -135,7 +136,7 @@ export function createHeroName(h1) {
   // uniforms shared by both materials
   const shared = {
     uSize: { value: [1, 1] }, uMouse: { value: [-9999, -9999] }, uAmp: { value: 0 },
-    uRadius: { value: 100 }, uLift: { value: 40 }, uOpacity: { value: 0 },
+    uRadius: { value: 100 }, uLift: { value: 40 }, uCast: { value: [10, -10] }, uOpacity: { value: 0 },
   };
   const shadowMat = new ShaderMaterial({
     vertexShader: SHADOW_VERT, fragmentShader: SHADOW_FRAG, transparent: true, depthTest: true, depthWrite: false,
@@ -210,7 +211,7 @@ export function createHeroName(h1) {
     s.setTransform(k, 0, 0, k, 0, 0);
     s.clearRect(0, 0, W, H);
     s.shadowColor = '#000';
-    s.shadowBlur = fs * 0.08 * k;
+    s.shadowBlur = fs * 0.06 * k;
     s.shadowOffsetX = OFF * k;            // shadow offsets ignore the transform: device pixels
     drawWords(s, fs, cs, -OFF);
     shadowTex.needsUpdate = true;
@@ -237,9 +238,10 @@ export function createHeroName(h1) {
     shadowMesh.position.set(0, -pivotY, 0.6);
 
     shared.uSize.value = [W, H];
-    // a soft rise that stays below the point where the letters would fold over
-    shared.uRadius.value = fs * 0.75;
-    shared.uLift.value = fs * 0.3;
+    // the letters barely rise, so they keep their shape; the shadow does the work
+    shared.uRadius.value = fs * 0.7;
+    shared.uLift.value = fs * 0.1;
+    shared.uCast.value = [fs * 0.07, -fs * 0.11];
     edge = fs * 0.03;
   }
 
@@ -276,12 +278,12 @@ export function createHeroName(h1) {
     const f = 60 * dt;
     // the heading moves while the page scrolls, so check again against a still pointer
     point();
-    // the bump grows in quickly and settles back a little slower
+    // the shadow eases in over about a third of a second and fades out a little slower
     const goal = target.near ? 1 : 0;
-    on += (goal - on) * (1 - Math.pow(goal > on ? 0.88 : 0.92, f));
+    on += (goal - on) * (1 - Math.pow(goal > on ? 0.92 : 0.945, f));
     if (on < 0.02 && target.near) { mouse.x = target.x; mouse.y = target.y; }
     else {
-      const e = 1 - Math.pow(0.8, f);
+      const e = 1 - Math.pow(0.84, f);
       mouse.x += (target.x - mouse.x) * e;
       mouse.y += (target.y - mouse.y) * e;
     }
