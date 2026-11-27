@@ -6,10 +6,11 @@
    lifts the plane, so the letters there rise, curl over and
    leave their shadow on the page.
 
-   Here the name leans back a little, and stays at that angle.
-   While the pointer is on the letters, the letters under it peel
-   up and curl over; when it leaves them they settle flat again.
-   The angle never changes on hover.
+   Here the name leans back a little, from the first frame, and
+   stays at that angle. While the pointer is on the letters, the
+   letters under it lift gently off the page and cast a soft
+   shadow onto the page and the letters below; when it leaves
+   them they settle flat again. The angle never changes.
    ========================================================= */
 import {
   WebGLRenderer, Scene, PerspectiveCamera, Group, PlaneGeometry, Mesh, ShaderMaterial,
@@ -22,6 +23,7 @@ const LIFT = /* glsl */`
   uniform vec2 uMouse;     // pointer on the page in CSS pixels, y up
   uniform float uAmp;      // 0..1, grows while the pointer is on the letters
   uniform float uRadius;   // reach of the bump in CSS pixels
+  uniform float uLift;     // height of the bump in CSS pixels
   float easeInOutCubic(float x) {
     return x < 0.5 ? 4.0 * x * x * x : 1.0 - pow(-2.0 * x + 2.0, 3.0) / 2.0;
   }
@@ -33,7 +35,6 @@ const LIFT = /* glsl */`
 // Letters: the plane rises towards the viewer (local z) under the pointer.
 const TEXT_VERT = /* glsl */`
   ${LIFT}
-  uniform float uLift;     // height of the bump in CSS pixels
   varying vec2 vUv;
   varying float vLift;
   void main() {
@@ -75,8 +76,11 @@ const TEXT_FRAG = /* glsl */`
   }
 `;
 
-// Shadow: a blurred copy of the letters lying flat on the page, showing where
-// they have lifted off it.
+// Shadow: a blurred copy of the letters on the page. The light comes from above and
+// behind the name, so a lifted letter's shadow falls towards the viewer: a point on
+// the page is shaded by the letters a little further up the page, by as much as they
+// are lifted. It sits just in front of the flat page, so it darkens the flat letters
+// it falls on, and behind anything lifted higher.
 const SHADOW_VERT = /* glsl */`
   varying vec2 vUv;
   void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
@@ -87,17 +91,17 @@ const SHADOW_FRAG = /* glsl */`
   uniform float uOpacity;
   varying vec2 vUv;
   void main() {
-    float k = liftAt(vUv * uSize);
-    float a = texture2D(uShadow, vUv).a * smoothstep(0.0, 0.35, k) * (1.0 - 0.45 * k) * 0.85 * uOpacity;
-    gl_FragColor = vec4(0.02, 0.03, 0.08, a);
+    vec2 p = vUv * uSize;
+    float k = liftAt(p);
+    vec2 caster = p + vec2(-0.2, 1.0) * k * uLift * 0.75;
+    float a = texture2D(uShadow, caster / uSize).a * smoothstep(0.0, 0.3, k) * 0.85 * uOpacity;
+    gl_FragColor = vec4(0.0, 0.01, 0.04, a);
   }
 `;
 
 const smooth = (t) => t * t * (3 - 2 * t);
-const easeInOutCubic = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
 
-// How far the page leans back (radians from upright). It settles at this angle once,
-// right after the intro, and stays there.
+// How far the page leans back (radians from upright). Fixed: it never changes.
 const TILT = 0.55;
 const FOV = 8;
 
@@ -131,19 +135,20 @@ export function createHeroName(h1) {
   // uniforms shared by both materials
   const shared = {
     uSize: { value: [1, 1] }, uMouse: { value: [-9999, -9999] }, uAmp: { value: 0 },
-    uRadius: { value: 100 }, uOpacity: { value: 0 },
+    uRadius: { value: 100 }, uLift: { value: 40 }, uOpacity: { value: 0 },
   };
   const shadowMat = new ShaderMaterial({
-    vertexShader: SHADOW_VERT, fragmentShader: SHADOW_FRAG, transparent: true, depthTest: false, depthWrite: false,
+    vertexShader: SHADOW_VERT, fragmentShader: SHADOW_FRAG, transparent: true, depthTest: true, depthWrite: false,
     uniforms: Object.assign({ uShadow: { value: shadowTex } }, shared),
   });
   const textMat = new ShaderMaterial({
     vertexShader: TEXT_VERT, fragmentShader: TEXT_FRAG, transparent: true, depthTest: true, depthWrite: true,
-    uniforms: Object.assign({ uText: { value: textTex }, uFlow: { value: 0 }, uLift: { value: 40 } }, shared),
+    uniforms: Object.assign({ uText: { value: textTex }, uFlow: { value: 0 } }, shared),
   });
   const shadowMesh = new Mesh(new PlaneGeometry(1, 1), shadowMat);
   const textMesh = new Mesh(new PlaneGeometry(1, 1), textMat);
-  shadowMesh.renderOrder = 0; textMesh.renderOrder = 1;
+  // letters first (they fill the depth buffer), then the shadow over the flat parts
+  textMesh.renderOrder = 0; shadowMesh.renderOrder = 1;
   pivot.add(shadowMesh, textMesh);
 
   let W = 0, H = 0, dpr = 1, padTop = 0, bands = [], midDown = 0;
@@ -205,7 +210,7 @@ export function createHeroName(h1) {
     s.setTransform(k, 0, 0, k, 0, 0);
     s.clearRect(0, 0, W, H);
     s.shadowColor = '#000';
-    s.shadowBlur = fs * 0.06 * k;
+    s.shadowBlur = fs * 0.08 * k;
     s.shadowOffsetX = OFF * k;            // shadow offsets ignore the transform: device pixels
     drawWords(s, fs, cs, -OFF);
     shadowTex.needsUpdate = true;
@@ -229,19 +234,21 @@ export function createHeroName(h1) {
     shadowMesh.geometry.dispose();
     shadowMesh.geometry = new PlaneGeometry(W, H);
     textMesh.position.set(0, -pivotY, 0);
-    shadowMesh.position.set(0, -pivotY, -1);
+    shadowMesh.position.set(0, -pivotY, 0.6);
 
     shared.uSize.value = [W, H];
-    // at this angle the bump has to be this tall for the letters to curl over
-    shared.uRadius.value = fs * 0.7;
-    textMat.uniforms.uLift.value = fs * 0.42;
+    // a soft rise that stays below the point where the letters would fold over
+    shared.uRadius.value = fs * 0.75;
+    shared.uLift.value = fs * 0.3;
     edge = fs * 0.03;
   }
 
   /* ---------- the pointer ---------- */
   const target = { x: -9999, y: -9999, near: false };
   const mouse = { x: -9999, y: -9999 };
-  let on = 0, edge = 4, client = null, angle = 0;
+  let on = 0, edge = 4, client = null;
+  const angle = TILT;
+  pivot.rotation.x = -angle;
   // Only while the pointer is on the letters themselves (each word's cap-height box).
   // The pointer is mapped onto the leaning page, so the part of the letter under it
   // is the part that lifts.
@@ -292,15 +299,11 @@ export function createHeroName(h1) {
   }
 
   /* ---------- loop: only while the hero is on screen ---------- */
-  let running = false, raf = 0, last = performance.now(), shown = false, opacity = 0, settle = -0.5;
+  let running = false, raf = 0, last = performance.now(), shown = false, opacity = 0;
   function frame(now) {
     raf = requestAnimationFrame(frame);
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     if (shown && opacity < 1) opacity = Math.min(1, opacity + dt / 0.35);
-    // once the canvas has faded in over the upright HTML letters, lean back gently
-    if (shown && settle < 1) settle = Math.min(1, settle + dt / 0.9);
-    angle = TILT * easeInOutCubic(Math.max(0, settle));
-    pivot.rotation.x = -angle;
     updatePointer(dt);
     textMat.uniforms.uFlow.value = flow(now);
     shared.uOpacity.value = opacity;
